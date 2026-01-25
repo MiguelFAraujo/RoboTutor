@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoboTutor - Aprenda Arduino</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 RoboTutor</h1>
+            <p>Seu assistente maker pessoal</p>
+        </header>
+
+        <div id="chat-box" class="chat-box">
+            <div class="message bot-message">
+                Olá! Sou o Miguel, seu instrutor de robótica. O que vamos construir hoje? 🛠️
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Ex: Como faço um LED piscar?"
+                onkeypress="handleEnter(event)">
+            <button onclick="sendMessage()">Enviar 🚀</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const chatBox = document.getElementById('chat-box');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            // Adiciona mensagem do usuário
+            chatBox.innerHTML += `<div class="message user-message">${text}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Mostra "Digitando..."
+            const loadingId = 'loading-' + Date.now();
+            chatBox.innerHTML += `<div id="${loadingId}" class="message bot-message">Pensando... 🤔</div>`;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                const data = await response.json();
+
+                // Remove loading e adiciona resposta (com Markdown parseado)
+                document.getElementById(loadingId).remove();
+                chatBox.innerHTML += `<div class="message bot-message">${marked.parse(data.response)}</div>`;
+
+            } catch (error) {
+                document.getElementById(loadingId).innerText = "Erro ao conectar com o servidor.";
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+    </script>
+</body>
+
+</html>

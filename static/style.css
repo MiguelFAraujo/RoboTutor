@@ -1,0 +1,104 @@
+:root {
+    --bg-color: #1a1a2e;
+    --chat-bg: #16213e;
+    --user-msg: #0f3460;
+    --bot-msg: #2a2a40;
+    --accent: #00979d; /* Arduino Teal approximation */
+    --text: #eaeaea;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    background-color: var(--chat-bg);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+header {
+    padding: 20px;
+    background-color: var(--user-msg);
+    text-align: center;
+    border-bottom: 2px solid var(--accent);
+}
+
+h1 { margin: 0; font-size: 1.5rem; }
+p { margin: 5px 0 0; opacity: 0.8; font-size: 0.9rem; }
+
+.chat-box {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.message {
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 80%;
+    line-height: 1.5;
+}
+
+.bot-message {
+    background-color: var(--bot-msg);
+    align-self: flex-start;
+    border-left: 4px solid var(--accent);
+}
+
+.user-message {
+    background-color: var(--accent);
+    align-self: flex-end;
+    color: #fff;
+}
+
+/* Estilo para blocos de código dentro das mensagens */
+pre {
+    background: #111;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+}
+
+.input-area {
+    padding: 20px;
+    background-color: var(--user-msg);
+    display: flex;
+    gap: 10px;
+}
+
+input {
+    flex: 1;
+    padding: 15px;
+    border-radius: 25px;
+    border: none;
+    background: var(--bot-msg);
+    color: white;
+    font-size: 1rem;
+}
+
+button {
+    padding: 0 25px;
+    border-radius: 25px;
+    border: none;
+    background-color: var(--accent);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+button:active { transform: scale(0.95); }

@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Environment Variables (IMPORTANT: Never commit secrets!)
+.env
+
+# Temporary/Debug files
+list_models.py
+list_models_clean.py
+models.txt
+
+# Editor directories
+.vscode/
+.idea/
