@@ -7,6 +7,8 @@ from django.dispatch import receiver
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_premium = models.BooleanField(default=False)
+    stripe_customer_id = models.CharField(max_length=100, blank=True, null=True)
+    stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} (Premium: {self.is_premium})"
