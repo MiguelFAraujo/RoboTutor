@@ -36,8 +36,9 @@ def get_response_stream(user_message):
 
     try:
         genai.configure(api_key=api_key)
+        # Usando 1.5-flash que tem limites melhores no tier gratuito que o 2.5
         model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
+            model_name="gemini-1.5-flash",
             system_instruction=SYSTEM_INSTRUCTION
         )
         
@@ -46,4 +47,8 @@ def get_response_stream(user_message):
             if chunk.text:
                 yield chunk.text
     except Exception as e:
-        yield f"❌ Erro ao conectar com o cérebro do robô: {str(e)}"
+        error_msg = str(e)
+        if "429" in error_msg:
+             yield "😓 **Ufa, cansei!**\n\nAtingimos o limite de velocidade do meu cérebro gratuito por hoje. Tente novamente em alguns segundos ou upgrade sua chave API."
+        else:
+            yield f"❌ Erro ao conectar com o cérebro do robô: {error_msg}"
