@@ -12,18 +12,21 @@ from .ai_tutor import get_response_stream
 
 @login_required
 def index(request):
-    # Daily Limit Logic
+    # Tiered Limit Logic
     today = timezone.now().date()
     usage_count = MessageLog.objects.filter(
         user=request.user,
         timestamp__date=today
     ).count()
     
-    LIMIT = 10
+    LIMIT = 50 if getattr(request.user, 'profile', None) and request.user.profile.is_premium else 10
     remaining = max(0, LIMIT - usage_count)
+    is_premium = getattr(request.user, 'profile', None) and request.user.profile.is_premium
     
     return render(request, 'core/index.html', {
         'remaining': remaining,
+        'limit': LIMIT,
+        'is_premium': is_premium,
         'user': request.user
     })
 
@@ -45,10 +48,13 @@ def chat_api(request):
                 timestamp__date=today
             ).count()
             
-            if usage_count >= 10:
+            # Limites
+            LIMIT = 50 if getattr(request.user, 'profile', None) and request.user.profile.is_premium else 10
+            
+            if usage_count >= LIMIT:
                  return JsonResponse({
                      "error": "LIMIT_REACHED", 
-                     "response": "🚫 **Limite Diário Atingido!**\n\nVocê usou suas 10 mensagens gratuitas de hoje.\n\nAmanhã tem mais! 🌙"
+                     "response": f"🚫 **Limite Diário Atingido ({LIMIT}/{LIMIT})**\n\nVocê é um usuário **{'Premium' if LIMIT > 10 else 'Gratuito'}** e atingiu sua cota.\n\n{'Amanhã tem mais!' if LIMIT > 10 else '🏆 **Faça Upgrade para Premium** e desbloqueie 50 mensagens por dia!'}"
                  }, status=403)
 
             # Log Message
