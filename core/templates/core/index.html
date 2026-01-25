@@ -32,8 +32,12 @@
             </div>
 
             <div class="user-profile">
+                <a href="{% url 'landing' %}"
+                    style="display: block; padding: 8px; margin-bottom: 10px; background: #1e293b; border-radius: 8px; color: #94a3b8; text-decoration: none; text-align: center;">🏠
+                    Página Inicial</a>
                 <div style="font-size: 0.8rem; color: #94a3b8;">
-                    {{ user.email }}<br>
+                    👋 {{ user.first_name|default:user.username }}<br>
+                    <span style="color: #64748b;">{{ user.email }}</span><br>
                     <a href="{% url 'logout' %}" style="color: #6366f1;">Sair</a>
                 </div>
             </div>
@@ -65,7 +69,8 @@
 
             <div id="chat-messages" class="chat-messages">
                 <div class="message bot">
-                    Olá! Sou o Miguel, seu instrutor de robótica. O que vamos construir hoje? 🛠️
+                    Olá, <strong>{{ user.first_name|default:user.username }}</strong>! 👋<br><br>
+                    Sou o Miguel, seu instrutor de robótica. O que vamos construir hoje? 🛠️
                 </div>
             </div>
 
@@ -151,7 +156,7 @@
             chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
-                const response = await fetch('/chat', {
+                const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

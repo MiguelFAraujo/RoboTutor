@@ -1,0 +1,277 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoboTutor - Aprenda Robótica com IA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: #6366f1;
+        }
+
+        .nav-buttons a {
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-login {
+            color: #94a3b8;
+            margin-right: 10px;
+        }
+
+        .btn-login:hover {
+            color: white;
+        }
+
+        .btn-register {
+            background: #6366f1;
+            color: white;
+        }
+
+        .btn-register:hover {
+            background: #4f46e5;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 80px 0;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 12px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Features */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            padding: 60px 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        /* Pricing */
+        .pricing {
+            text-align: center;
+            padding: 60px 0;
+        }
+
+        .pricing h2 {
+            font-size: 2rem;
+            margin-bottom: 40px;
+        }
+
+        .price-card {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.1);
+            border: 2px solid #6366f1;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 350px;
+        }
+
+        .price-amount {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .price-period {
+            color: #94a3b8;
+        }
+
+        .price-features {
+            list-style: none;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .price-features li {
+            padding: 8px 0;
+            color: #cbd5e1;
+        }
+
+        .price-features li::before {
+            content: "✓ ";
+            color: #22c55e;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <a href="/" class="logo">🤖 Robo<span>Tutor</span></a>
+            <div class="nav-buttons">
+                <a href="{% url 'login' %}" class="btn-login">Entrar</a>
+                <a href="{% url 'register' %}" class="btn-register">Cadastrar</a>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <h1>Aprenda Robótica<br>com seu <span>Professor IA</span></h1>
+            <p>Tire dúvidas sobre Arduino, sensores, motores e projetos de robótica com um tutor inteligente disponível
+                24 horas.</p>
+            <a href="{% url 'register' %}" class="cta-button">Começar Agora Grátis 🚀</a>
+        </section>
+
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🎓</div>
+                <h3>Aprenda no Seu Ritmo</h3>
+                <p>Pergunte quantas vezes precisar, sem julgamentos. O robô está sempre pronto para explicar de novo.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Respostas Instantâneas</h3>
+                <p>Não espere pela aula. Receba ajuda imediata para seus projetos e desafios de robótica.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">💾</div>
+                <h3>Histórico Salvo</h3>
+                <p>Todas as suas conversas ficam guardadas. Volte quando quiser para revisar o que aprendeu.</p>
+            </div>
+        </section>
+
+        <section class="pricing">
+            <h2>Simples e Acessível</h2>
+            <div class="price-card">
+                <div class="price-amount">R$ 4,99</div>
+                <div class="price-period">por semana</div>
+                <ul class="price-features">
+                    <li>50 mensagens por dia</li>
+                    <li>Histórico ilimitado</li>
+                    <li>Acesso a todos os tópicos</li>
+                    <li>Suporte prioritário</li>
+                </ul>
+                <a href="{% url 'register' %}" class="cta-button" style="width: 100%;">Testar Grátis</a>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>© 2026 RoboTutor. Feito com 💜 para futuros engenheiros.</p>
+    </footer>
+</body>
+
+</html>

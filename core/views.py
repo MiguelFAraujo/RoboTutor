@@ -11,6 +11,12 @@ from datetime import timedelta
 from .models import MessageLog, Conversation
 from .ai_tutor import get_response_stream
 
+def landing(request):
+    # If user is logged in, go straight to chat
+    if request.user.is_authenticated:
+        return redirect('chat')
+    return render(request, 'core/landing.html')
+
 @login_required
 def index(request):
     # Tiered Limit Logic
@@ -108,13 +114,15 @@ def get_conversation_history(request, conversation_id):
     except Conversation.DoesNotExist:
         return JsonResponse({'error': 'Conversation not found'}, status=404)
 
+from .forms import CustomUserCreationForm
+
 def register(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect('index')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
