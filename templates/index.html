@@ -50,9 +50,11 @@
             input.value = '';
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Mostra "Pensando..."
-            const loadingId = 'loading-' + Date.now();
-            chatBox.innerHTML += `<div id="${loadingId}" class="message bot">Pensando... 🤔</div>`;
+            // Cria placeholder para o bot
+            const botMessageDiv = document.createElement('div');
+            botMessageDiv.className = 'message bot';
+            botMessageDiv.innerHTML = 'Pensando... 🤔';
+            chatBox.appendChild(botMessageDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
@@ -61,16 +63,31 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: text })
                 });
-                const data = await response.json();
 
-                // Remove loading e adiciona resposta
-                document.getElementById(loadingId).remove();
-                chatBox.innerHTML += `<div class="message bot">${marked.parse(data.response)}</div>`;
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let accumulatedText = "";
+
+                // Limpa o "Pensando..."
+                botMessageDiv.innerHTML = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    accumulatedText += chunk;
+
+                    // Renderiza Markdown em tempo real
+                    // Nota: Isso pode fazer blocos de código "piscarem" enquanto digita, 
+                    // mas é a forma mais simples de manter o MD ativo.
+                    botMessageDiv.innerHTML = marked.parse(accumulatedText);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
 
             } catch (error) {
-                document.getElementById(loadingId).innerText = "Erro ao conectar com o servidor.";
+                botMessageDiv.innerHTML = "❌ Erro ao conectar com o cérebro do robô.";
             }
-            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         function handleFormSubmit(e) {

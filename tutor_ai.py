@@ -26,9 +26,15 @@ DIRETRIZES TÉCNICAS (ARDUINO):
 Se o usuário perguntar algo fora do tópico (como receitas de bolo), traga gentilmente de volta para tecnologia.
 """
 
-def get_response(user_message):
+def get_response_stream(user_message):
     if not api_key:
-        return "⚠️ **Modo de Teste:** API Key não encontrada. Configure o arquivo .env para falar com o Miguel AI real! <br><br> *Resposta simulada:* Para acender um LED, você precisa de um resistor de 220 ohms para limitar a corrente..."
+        # Simula streaming no modo de teste
+        import time
+        fake_response = "⚠️ **Modo de Teste:** API Key não encontrada...\n\nPara acender um LED, você precisa de um resistor de 220 ohms..."
+        for char in fake_response:
+            yield char
+            time.sleep(0.02) # Simula digitação
+        return
 
     try:
         genai.configure(api_key=api_key)
@@ -37,8 +43,9 @@ def get_response(user_message):
             system_instruction=SYSTEM_INSTRUCTION
         )
         
-        # Aqui poderíamos manter histórico, mas para simplificar vamos stateless por enquanto
-        response = model.generate_content(user_message)
-        return response.text
+        response = model.generate_content(user_message, stream=True)
+        for chunk in response:
+            if chunk.text:
+                yield chunk.text
     except Exception as e:
-        return f"❌ Erro ao conectar com o cérebro do robô: {str(e)}"
+        yield f"❌ Erro ao conectar com o cérebro do robô: {str(e)}"
