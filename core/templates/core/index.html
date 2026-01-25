@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -6,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#020617">
     <title>RoboTutor - Aprenda Arduino</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -17,7 +18,9 @@
         <main class="chat-interface">
             <header class="chat-header">
                 <h1>🤖 RoboTutor <span>AI</span></h1>
-                <p>Seu assistente maker pessoal</p>
+                <p>Olá, {{ user.first_name|default:user.username }}! | Créditos Hoje: <strong>{{ remaining }}</strong>
+                </p>
+                <a href="{% url 'logout' %}" style="color: #6366f1; font-size: 0.8rem; text-decoration: none;">Sair</a>
             </header>
 
             <div id="chat-messages" class="chat-messages">
@@ -28,6 +31,7 @@
 
             <div class="chat-input-area">
                 <form class="input-form" onsubmit="handleFormSubmit(event)">
+                    {% csrf_token %}
                     <input type="text" id="user-input" class="chat-input" placeholder="Pergunte sobre Arduino..."
                         aria-label="Sua mensagem" autocomplete="off">
                     <button type="submit" class="send-button" aria-label="Enviar mensagem">
@@ -68,6 +72,12 @@
                     body: JSON.stringify({ message: text })
                 });
 
+                if (response.status === 403) {
+                    const data = await response.json();
+                    botMessageDiv.innerHTML = marked.parse(data.response);
+                    return;
+                }
+
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let accumulatedText = "";
@@ -95,9 +105,6 @@
         function handleFormSubmit(e) {
             e.preventDefault();
             sendMessage();
-            // Retira o foco do input em celulares para fechar teclado?
-            // document.getElementById('user-input').blur(); 
-            // Comentado para manter agilidade em desktop.
         }
     </script>
 </body>

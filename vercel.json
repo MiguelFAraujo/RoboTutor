@@ -2,14 +2,14 @@
     "version": 2,
     "builds": [
         {
-            "src": "app.py",
+            "src": "robotutor_project/wsgi.py",
             "use": "@vercel/python"
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "app.py"
+            "dest": "robotutor_project/wsgi.py"
         }
     ]
 }

@@ -1,13 +1,13 @@
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+import time
 
-# Carrega variáveis de ambiente (crie um arquivo .env com GOOGLE_API_KEY=sua_chave)
+# Carrega variáveis de ambiente
 load_dotenv()
 
 api_key = os.getenv("GOOGLE_API_KEY")
 
-# Configuração da Persona (System Prompt)
 SYSTEM_INSTRUCTION = """
 Você é o Miguel, um instrutor entusiasta de Engenharia de Software e Cultura Maker. 
 Seu objetivo é ensinar robótica (Arduino) para iniciantes e crianças de forma acessível e divertida.
@@ -28,12 +28,10 @@ Se o usuário perguntar algo fora do tópico (como receitas de bolo), traga gent
 
 def get_response_stream(user_message):
     if not api_key:
-        # Simula streaming no modo de teste
-        import time
         fake_response = "⚠️ **Modo de Teste:** API Key não encontrada...\n\nPara acender um LED, você precisa de um resistor de 220 ohms..."
         for char in fake_response:
             yield char
-            time.sleep(0.02) # Simula digitação
+            time.sleep(0.02)
         return
 
     try:

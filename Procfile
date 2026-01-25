@@ -1,1 +1,1 @@
-web: gunicorn app:app
+web: gunicorn robotutor_project.wsgi

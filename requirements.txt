@@ -1,4 +1,6 @@
-flask
+django
+whitenoise
 google-generativeai
 python-dotenv
 gunicorn
+django-cors-headers
