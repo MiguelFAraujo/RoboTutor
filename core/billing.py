@@ -30,10 +30,7 @@ def create_checkout_session(request):
                 },
             ],
             mode='subscription',
-            # Cupom de desconto para o primeiro mês (R$ 10 off ou 50%)
-            discounts=[{
-                'coupon': os.getenv("STRIPE_PROMO_COUPON_ID"), # ID do cupom criado no dashboard
-            }],
+            # Sem cupom para plano semanal
             success_url=DOMAIN + '/?success=true',
             cancel_url=DOMAIN + '/?canceled=true',
             client_reference_id=request.user.id,
