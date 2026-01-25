@@ -6,46 +6,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RoboTutor - Aprenda Arduino</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body>
-    <div class="container">
-        <header>
-            <h1>🤖 RoboTutor</h1>
-            <p>Seu assistente maker pessoal</p>
-        </header>
+    <div class="app-container">
+        <main class="chat-interface">
+            <header class="chat-header">
+                <h1>🤖 RoboTutor</h1>
+                <p>Seu assistente maker pessoal</p>
+            </header>
 
-        <div id="chat-box" class="chat-box">
-            <div class="message bot-message">
-                Olá! Sou o Miguel, seu instrutor de robótica. O que vamos construir hoje? 🛠️
+            <div id="chat-messages" class="chat-messages">
+                <div class="message bot">
+                    Olá! Sou o Miguel, seu instrutor de robótica. O que vamos construir hoje? 🛠️
+                </div>
             </div>
-        </div>
 
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="Ex: Como faço um LED piscar?"
-                onkeypress="handleEnter(event)">
-            <button onclick="sendMessage()">Enviar 🚀</button>
-        </div>
+            <div class="chat-input-area">
+                <form class="input-form" onsubmit="handleFormSubmit(event)">
+                    <input type="text" id="user-input" class="chat-input"
+                        placeholder="Pergunte sobre Arduino, sensores..." aria-label="Sua mensagem" autocomplete="off">
+                    <button type="submit" class="send-button" aria-label="Enviar mensagem">
+                        Enviar 🚀
+                    </button>
+                </form>
+            </div>
+        </main>
     </div>
 
     <script>
         async function sendMessage() {
             const input = document.getElementById('user-input');
-            const chatBox = document.getElementById('chat-box');
+            const chatBox = document.getElementById('chat-messages');
             const text = input.value.trim();
 
             if (!text) return;
 
             // Adiciona mensagem do usuário
-            chatBox.innerHTML += `<div class="message user-message">${text}</div>`;
+            chatBox.innerHTML += `<div class="message user">${text}</div>`;
             input.value = '';
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Mostra "Digitando..."
+            // Mostra "Pensando..."
             const loadingId = 'loading-' + Date.now();
-            chatBox.innerHTML += `<div id="${loadingId}" class="message bot-message">Pensando... 🤔</div>`;
+            chatBox.innerHTML += `<div id="${loadingId}" class="message bot">Pensando... 🤔</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
                 const response = await fetch('/chat', {
@@ -55,9 +63,9 @@
                 });
                 const data = await response.json();
 
-                // Remove loading e adiciona resposta (com Markdown parseado)
+                // Remove loading e adiciona resposta
                 document.getElementById(loadingId).remove();
-                chatBox.innerHTML += `<div class="message bot-message">${marked.parse(data.response)}</div>`;
+                chatBox.innerHTML += `<div class="message bot">${marked.parse(data.response)}</div>`;
 
             } catch (error) {
                 document.getElementById(loadingId).innerText = "Erro ao conectar com o servidor.";
@@ -65,8 +73,9 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function handleEnter(e) {
-            if (e.key === 'Enter') sendMessage();
+        function handleFormSubmit(e) {
+            e.preventDefault(); // Impede o reload da página
+            sendMessage();
         }
     </script>
 </body>
