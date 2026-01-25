@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#020617">
     <title>RoboTutor - Aprenda Arduino</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap"
@@ -15,7 +16,7 @@
     <div class="app-container">
         <main class="chat-interface">
             <header class="chat-header">
-                <h1>🤖 RoboTutor</h1>
+                <h1>🤖 RoboTutor <span>AI</span></h1>
                 <p>Seu assistente maker pessoal</p>
             </header>
 
@@ -27,10 +28,13 @@
 
             <div class="chat-input-area">
                 <form class="input-form" onsubmit="handleFormSubmit(event)">
-                    <input type="text" id="user-input" class="chat-input"
-                        placeholder="Pergunte sobre Arduino, sensores..." aria-label="Sua mensagem" autocomplete="off">
+                    <input type="text" id="user-input" class="chat-input" placeholder="Pergunte sobre Arduino..."
+                        aria-label="Sua mensagem" autocomplete="off">
                     <button type="submit" class="send-button" aria-label="Enviar mensagem">
-                        Enviar 🚀
+                        <!-- SVG Icon for Send -->
+                        <svg viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                        </svg>
                     </button>
                 </form>
             </div>
@@ -78,9 +82,7 @@
                     const chunk = decoder.decode(value, { stream: true });
                     accumulatedText += chunk;
 
-                    // Renderiza Markdown em tempo real
-                    // Nota: Isso pode fazer blocos de código "piscarem" enquanto digita, 
-                    // mas é a forma mais simples de manter o MD ativo.
+                    // Renderiza Markdown
                     botMessageDiv.innerHTML = marked.parse(accumulatedText);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
@@ -91,8 +93,11 @@
         }
 
         function handleFormSubmit(e) {
-            e.preventDefault(); // Impede o reload da página
+            e.preventDefault();
             sendMessage();
+            // Retira o foco do input em celulares para fechar teclado?
+            // document.getElementById('user-input').blur(); 
+            // Comentado para manter agilidade em desktop.
         }
     </script>
 </body>
