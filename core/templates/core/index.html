@@ -27,24 +27,50 @@
             </div>
 
             <div class="history-list">
-                {% for conv in conversations %}
-                <div class="history-item" id="conv-{{ conv.id }}">
-                    <span class="title" onclick="loadConversation({{ conv.id }})">{{ conv.title }}</span>
-                    <button class="delete-btn" onclick="deleteConversation({{ conv.id }}, event)"
-                        title="Apagar conversa">🗑️</button>
+                <!-- Conversations Section -->
+                <div class="sidebar-section">
+                    <div class="section-title">💬 Conversas</div>
+                    {% for conv in conversations %}
+                    <div class="history-item" id="conv-{{ conv.id }}">
+                        <span class="title" onclick="loadConversation({{ conv.id }})">{{ conv.title }}</span>
+                        <button class="delete-btn" onclick="deleteConversation({{ conv.id }}, event)"
+                            title="Apagar">🗑️</button>
+                    </div>
+                    {% empty %}
+                    <div class="sidebar-empty">Nenhuma conversa ainda</div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+
+                <!-- Projects Section -->
+                <div class="sidebar-section">
+                    <div class="section-title">📁 Meus Projetos</div>
+                    {% for project in projects %}
+                    <div class="history-item project-item {% if project.status == 'completed' %}completed{% endif %}"
+                        id="project-{{ project.id }}">
+                        <span class="title"
+                            onclick="{% if project.conversation %}loadConversation({{ project.conversation.id }}){% endif %}">
+                            {% if project.status == 'completed' %}✅{% elif project.status == 'paused' %}⏸️{% else %}🔧{%
+                            endif %}
+                            {{ project.title }}
+                        </span>
+                        <button class="delete-btn" onclick="deleteProject({{ project.id }}, event)"
+                            title="Apagar">🗑️</button>
+                    </div>
+                    {% empty %}
+                    <div class="sidebar-empty">Nenhum projeto salvo</div>
+                    {% endfor %}
+                </div>
             </div>
 
             <div class="user-profile">
+                <a href="{% url 'projects' %}">📁 Ver Todos os Projetos</a>
                 <a href="{% url 'landing' %}">🏠 Página Inicial</a>
-                <div style="font-size: 0.8rem; color: #94a3b8;">
+                <div>
                     👋 {{ user.first_name|default:user.username }}<br>
                     <span style="color: #64748b;">{{ user.email }}</span><br>
                     <form method="post" action="{% url 'logout' %}" style="display:inline;">
                         {% csrf_token %}
-                        <button type="submit"
-                            style="background:none; border:none; color: #6366f1; cursor:pointer; padding:0; font-size: inherit; text-decoration: underline;">Sair</button>
+                        <button type="submit">Sair</button>
                     </form>
                 </div>
             </div>

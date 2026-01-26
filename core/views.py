@@ -8,7 +8,7 @@ import os
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
-from .models import MessageLog, Conversation
+from .models import MessageLog, Conversation, Project
 from .ai_tutor import get_response_stream
 
 def landing(request):
@@ -24,7 +24,7 @@ def index(request):
     usage_count = MessageLog.objects.filter(
         user=request.user,
         timestamp__date=today,
-        role='user' # Count only user messages
+        role='user'
     ).count()
     
     LIMIT = 50 if getattr(request.user, 'profile', None) and request.user.profile.is_premium else 10
@@ -33,16 +33,40 @@ def index(request):
     
     # Conversations for Sidebar
     conversations = Conversation.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Projects for Sidebar
+    projects = Project.objects.filter(user=request.user)
 
     return render(request, 'core/index.html', {
         'remaining': remaining,
         'limit': LIMIT,
         'is_premium': is_premium,
         'user': request.user,
-        'conversations': conversations
+        'conversations': conversations,
+        'projects': projects
     })
 
-@csrf_exempt # Simplification for fetch API, ideally use CSRF token in JS
+
+def stream_and_save_response(user, conversation, user_message):
+    """Generator that streams AI response and saves it when complete."""
+    full_response = ""
+    
+    for chunk in get_response_stream(user_message):
+        full_response += chunk
+        yield chunk
+    
+    # Save bot response after streaming completes
+    if full_response and conversation:
+        MessageLog.objects.create(
+            user=user,
+            conversation=conversation,
+            role='bot',
+            content=full_response,
+            content_length=len(full_response)
+        )
+
+
+@csrf_exempt
 @login_required
 def chat_api(request):
     if request.method == "POST":
@@ -62,7 +86,6 @@ def chat_api(request):
                 role='user'
             ).count()
             
-            # Limites
             LIMIT = 50 if getattr(request.user, 'profile', None) and request.user.profile.is_premium else 10
             
             if usage_count >= LIMIT:
@@ -80,7 +103,6 @@ def chat_api(request):
                     pass
             
             if not conversation:
-                # Create title from first 30 chars
                 title = (user_message[:30] + '..') if len(user_message) > 30 else user_message
                 conversation = Conversation.objects.create(user=request.user, title=title)
 
@@ -93,9 +115,9 @@ def chat_api(request):
                 content_length=len(user_message)
             )
 
-            # Stream Response
+            # Stream Response and save when complete
             return StreamingHttpResponse(
-                get_response_stream(user_message), 
+                stream_and_save_response(request.user, conversation, user_message), 
                 content_type='text/plain',
                 headers={'X-Conversation-Id': str(conversation.id)}
             )
@@ -140,3 +162,89 @@ def delete_conversation(request, conversation_id):
             return JsonResponse({'error': 'Conversation not found'}, status=404)
     return JsonResponse({'error': 'Method not allowed'}, status=405)
 
+
+# ============================================================================
+# Project Collection Endpoints
+# ============================================================================
+
+@login_required
+def projects_list(request):
+    """List all user's projects."""
+    projects = Project.objects.filter(user=request.user)
+    return render(request, 'core/projects.html', {
+        'projects': projects,
+        'user': request.user
+    })
+
+@csrf_exempt
+@login_required
+def create_project(request):
+    """Create a new project from a conversation."""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            title = data.get('title', 'Meu Projeto')
+            description = data.get('description', '')
+            conversation_id = data.get('conversation_id')
+            
+            conversation = None
+            if conversation_id:
+                try:
+                    conversation = Conversation.objects.get(id=conversation_id, user=request.user)
+                except Conversation.DoesNotExist:
+                    pass
+            
+            project = Project.objects.create(
+                user=request.user,
+                conversation=conversation,
+                title=title,
+                description=description,
+                status='in_progress'
+            )
+            
+            return JsonResponse({
+                'success': True, 
+                'project_id': project.id,
+                'message': 'Projeto salvo na sua coleção! 🎉'
+            })
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+@csrf_exempt
+@login_required
+def update_project_status(request, project_id):
+    """Update project status (complete, pause, etc)."""
+    if request.method in ['POST', 'PATCH']:
+        try:
+            data = json.loads(request.body)
+            status = data.get('status')
+            
+            if status not in ['in_progress', 'completed', 'paused']:
+                return JsonResponse({'error': 'Invalid status'}, status=400)
+            
+            project = Project.objects.get(id=project_id, user=request.user)
+            project.status = status
+            project.save()
+            
+            return JsonResponse({'success': True, 'status': status})
+        except Project.DoesNotExist:
+            return JsonResponse({'error': 'Project not found'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+@csrf_exempt
+@login_required
+def delete_project(request, project_id):
+    """Delete a project from collection."""
+    if request.method == 'DELETE':
+        try:
+            project = Project.objects.get(id=project_id, user=request.user)
+            project.delete()
+            return JsonResponse({'success': True})
+        except Project.DoesNotExist:
+            return JsonResponse({'error': 'Project not found'}, status=404)
+    return JsonResponse({'error': 'Method not allowed'}, status=405)

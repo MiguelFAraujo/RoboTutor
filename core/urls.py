@@ -14,6 +14,12 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('subscribe/', billing.create_checkout_session, name='subscribe'),
     path('webhook/', billing.stripe_webhook, name='webhook'),
-    # path('accounts/', include('django.contrib.auth.urls')),
+    
+    # Project Collection
+    path('projects/', views.projects_list, name='projects'),
+    path('api/projects/create', views.create_project, name='create_project'),
+    path('api/projects/<int:project_id>/status', views.update_project_status, name='update_project_status'),
+    path('api/projects/<int:project_id>/delete', views.delete_project, name='delete_project'),
 ]
+
 
