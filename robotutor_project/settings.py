@@ -14,6 +14,13 @@ from pathlib import Path
 import os
 import dj_database_url
 
+# Load .env file locally (ignored on Vercel where env vars come from dashboard)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
