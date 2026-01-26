@@ -51,18 +51,13 @@
                 <div style="font-size: 0.85rem; margin-top: 5px; color: #94a3b8;">
                     {% if is_premium %}
                     <span
-                        style="background: #6366f1; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">PREMIUM
+                        style="background: linear-gradient(135deg, #6366f1, #a855f7); color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold;">PREMIUM
                         👑</span>
-                    | Créditos: <strong>{{ remaining }}/{{ limit }}</strong>
                     {% else %}
-                    <span
-                        style="background: #334155; color: #cbd5e1; padding: 2px 6px; border-radius: 4px;">GRÁTIS</span>
                     <a href="{% url 'subscribe' %}"
-                        style="display: inline-block; background: #22c55e; color: white; text-decoration: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; margin-left: 5px;">
-                        Assinar Premium (R$ 4,99/sem) 🚀
+                        style="display: inline-block; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; text-decoration: none; padding: 6px 12px; border-radius: 12px; font-weight: bold; font-size: 0.8rem;">
+                        ⚡ Seja Premium
                     </a>
-                    <div style="margin-top: 4px; font-size: 0.75rem;">Créditos: <strong>{{ remaining }}/{{ limit
-                            }}</strong></div>
                     {% endif %}
                 </div>
             </header>
