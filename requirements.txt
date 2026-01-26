@@ -1,6 +1,6 @@
 django
 whitenoise
-google-generativeai
+google-generativeai>=0.8.3
 python-dotenv
 gunicorn
 django-cors-headers

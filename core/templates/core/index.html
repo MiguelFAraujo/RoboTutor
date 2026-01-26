@@ -38,7 +38,11 @@
                 <div style="font-size: 0.8rem; color: #94a3b8;">
                     👋 {{ user.first_name|default:user.username }}<br>
                     <span style="color: #64748b;">{{ user.email }}</span><br>
-                    <a href="{% url 'logout' %}" style="color: #6366f1;">Sair</a>
+                    <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit"
+                            style="background:none; border:none; color: #6366f1; cursor:pointer; padding:0; font-size: inherit; text-decoration: underline;">Sair</button>
+                    </form>
                 </div>
             </div>
         </aside>
