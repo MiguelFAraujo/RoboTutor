@@ -5,6 +5,7 @@ from . import views, billing
 urlpatterns = [
     path('', views.landing, name='landing'),
     path('chat/', views.index, name='index'),
+    path('chat/', views.index, name='chat'),  # Alias for 'chat'
     path('login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('api/chat', views.chat_api, name='chat_api'),
