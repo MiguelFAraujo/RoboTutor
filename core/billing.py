@@ -3,41 +3,55 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import login_required
 import os
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-DOMAIN = "https://robotutor-miguel.onrender.com" # TODO: Make dynamic or ENV
-# Local testing: "http://127.0.0.1:8000"
+DOMAIN = os.getenv("DOMAIN", "http://127.0.0.1:8000")
 
+@login_required
 def create_checkout_session(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
+    # Check if user has email
+    if not request.user.email:
+        return render(request, 'core/error.html', {
+            'message': 'Você precisa ter um email cadastrado para assinar. Por favor, atualize seu perfil.',
+            'error_code': 'EMAIL_REQUIRED'
+        })
     
     try:
-        # Preço Base: R$ 19,99 (Criar no Dashboard do Stripe e pegar o Price ID)
-        # Para facilitar, vou criar o produto na hora se não existir (apenas exemplo)
-        # Em produção, use o PRICE_ID fixo do seu dashboard.
+        price_id = os.getenv("STRIPE_PRICE_ID")
+        if not price_id:
+            return render(request, 'core/error.html', {
+                'message': 'Sistema de pagamento não configurado. Entre em contato com o suporte.',
+                'error_code': 'STRIPE_NOT_CONFIGURED'
+            })
         
         checkout_session = stripe.checkout.Session.create(
             customer_email=request.user.email,
             payment_method_types=['card'],
             line_items=[
                 {
-                    # Price ID do seu plano de R$ 19,99
-                    'price': os.getenv("STRIPE_PRICE_ID"), 
+                    'price': price_id,
                     'quantity': 1,
                 },
             ],
             mode='subscription',
-            # Sem cupom para plano semanal
-            success_url=DOMAIN + '/?success=true',
-            cancel_url=DOMAIN + '/?canceled=true',
-            client_reference_id=request.user.id,
+            success_url=DOMAIN + '/chat/?success=true',
+            cancel_url=DOMAIN + '/chat/?canceled=true',
+            client_reference_id=str(request.user.id),
         )
         return redirect(checkout_session.url, code=303)
+    except stripe.error.InvalidRequestError as e:
+        return render(request, 'core/error.html', {
+            'message': f'Erro no pagamento: {str(e.user_message or e)}',
+            'error_code': 'STRIPE_ERROR'
+        })
     except Exception as e:
-        return JsonResponse({'error': str(e)})
+        return render(request, 'core/error.html', {
+            'message': 'Não foi possível iniciar o pagamento. Tente novamente mais tarde.',
+            'error_code': 'PAYMENT_ERROR'
+        })
 
 @csrf_exempt
 def stripe_webhook(request):

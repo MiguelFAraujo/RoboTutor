@@ -79,7 +79,7 @@ ROOT_URLCONF = 'robotutor_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'core' / 'templates'], # Template dir
+        'DIRS': [BASE_DIR / 'core' / 'templates', BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
