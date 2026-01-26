@@ -51,9 +51,9 @@ def get_response_stream(user_message):
 
     try:
         genai.configure(api_key=api_key)
-        # Usando gemini-1.5-flash (versão estável mais recente)
+        # Usando gemini-2.0-flash (versão mais recente e rápida disponível)
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
+            model_name="gemini-2.0-flash",
             system_instruction=SYSTEM_INSTRUCTION
         )
         
