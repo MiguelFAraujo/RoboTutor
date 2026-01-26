@@ -55,16 +55,11 @@
                 <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
                 <h1>🤖 RoboTutor <span>AI</span></h1>
 
-                <div style="font-size: 0.85rem; margin-top: 5px; color: #94a3b8;">
+                <div>
                     {% if is_premium %}
-                    <span
-                        style="background: linear-gradient(135deg, #6366f1, #a855f7); color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold;">PREMIUM
-                        👑</span>
+                    <span class="premium-badge">PREMIUM 👑</span>
                     {% else %}
-                    <a href="{% url 'subscribe' %}"
-                        style="display: inline-block; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; text-decoration: none; padding: 6px 12px; border-radius: 12px; font-weight: bold; font-size: 0.8rem;">
-                        ⚡ Seja Premium
-                    </a>
+                    <a href="{% url 'subscribe' %}" class="upgrade-btn">⚡ Seja Premium</a>
                     {% endif %}
                 </div>
             </header>

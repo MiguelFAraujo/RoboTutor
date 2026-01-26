@@ -5,26 +5,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Aprenda robótica e Arduino com um tutor de IA disponível 24 horas. Tire dúvidas, construa projetos e aprenda no seu ritmo.">
     <title>RoboTutor - Aprenda Robótica com IA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
+        /* Reset & Base */
+        *,
+        *::before,
+        *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-            min-height: 100vh;
-            color: white;
+        :root {
+            --color-bg: #030712;
+            --color-surface: rgba(15, 23, 42, 0.6);
+            --color-primary: #6366f1;
+            --color-primary-light: #818cf8;
+            --color-accent: #a855f7;
+            --color-success: #22c55e;
+            --color-text: #f8fafc;
+            --color-text-muted: #94a3b8;
+            --color-border: rgba(99, 102, 241, 0.2);
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --gradient-success: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
         }
 
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--color-bg);
+            min-height: 100vh;
+            color: var(--color-text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-effects {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .bg-effects::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 40% 60%, rgba(34, 197, 94, 0.05) 0%, transparent 30%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(2%, 2%) rotate(1deg);
+            }
+
+            66% {
+                transform: translate(-1%, 1%) rotate(-1deg);
+            }
+        }
+
+        /* Container */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
         }
 
         /* Navbar */
@@ -32,245 +96,543 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
+            padding: 24px 0;
         }
 
         .logo {
             font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
+            font-weight: 800;
+            color: var(--color-text);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .logo span {
-            color: #6366f1;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
         }
 
         .nav-buttons a {
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 12px 24px;
+            border-radius: 12px;
             text-decoration: none;
             font-weight: 600;
-            transition: all 0.3s;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
         }
 
         .btn-login {
-            color: #94a3b8;
-            margin-right: 10px;
+            color: var(--color-text-muted);
+            background: transparent;
         }
 
         .btn-login:hover {
-            color: white;
+            color: var(--color-text);
         }
 
         .btn-register {
-            background: #6366f1;
+            background: var(--gradient-primary);
             color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
         }
 
         .btn-register:hover {
-            background: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(99, 102, 241, 0.4);
         }
 
         /* Hero */
         .hero {
             text-align: center;
-            padding: 80px 0;
+            padding: 80px 0 60px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 100px;
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-badge span {
+            color: var(--color-success);
         }
 
         .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 20px;
-            line-height: 1.2;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -0.03em;
         }
 
-        .hero h1 span {
-            background: linear-gradient(90deg, #6366f1, #a855f7);
+        .hero h1 .gradient-text {
+            background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .hero p {
             font-size: 1.25rem;
-            color: #94a3b8;
+            color: var(--color-text-muted);
             max-width: 600px;
             margin: 0 auto 40px;
+            line-height: 1.7;
         }
 
-        .cta-button {
-            display: inline-block;
-            padding: 16px 40px;
-            background: linear-gradient(135deg, #6366f1, #a855f7);
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 18px 36px;
+            background: var(--gradient-primary);
             color: white;
             text-decoration: none;
             font-size: 1.1rem;
             font-weight: 700;
-            border-radius: 12px;
-            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
         }
 
-        .cta-button:hover {
+        .cta-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.5);
+        }
+
+        .cta-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 18px 36px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .cta-secondary:hover {
+            border-color: var(--color-primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        /* Demo Preview */
+        .demo-preview {
+            margin: 60px auto 0;
+            max-width: 700px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 24px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .demo-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .demo-header .avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .demo-header .name {
+            font-weight: 600;
+        }
+
+        .demo-header .status {
+            font-size: 0.8rem;
+            color: var(--color-success);
+        }
+
+        .demo-message {
+            background: rgba(30, 41, 59, 0.8);
+            padding: 16px 20px;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--color-text-muted);
         }
 
         /* Features */
         .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            padding: 60px 0;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            padding: 80px 0;
         }
 
         .feature-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            transition: transform 0.3s;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 20px;
+            padding: 32px;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
         }
 
         .feature-card:hover {
             transform: translateY(-5px);
+            border-color: var(--color-primary);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.1);
         }
 
         .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
+            width: 56px;
+            height: 56px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
         }
 
         .feature-card h3 {
             font-size: 1.25rem;
-            margin-bottom: 10px;
+            font-weight: 700;
+            margin-bottom: 12px;
         }
 
         .feature-card p {
-            color: #94a3b8;
-            line-height: 1.6;
+            color: var(--color-text-muted);
+            line-height: 1.7;
         }
 
         /* Pricing */
         .pricing {
             text-align: center;
-            padding: 60px 0;
+            padding: 60px 0 80px;
         }
 
         .pricing h2 {
             font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .pricing>p {
+            color: var(--color-text-muted);
             margin-bottom: 40px;
         }
 
+        .pricing-cards {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
         .price-card {
-            display: inline-block;
-            background: rgba(99, 102, 241, 0.1);
-            border: 2px solid #6366f1;
-            border-radius: 20px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 24px;
             padding: 40px;
-            max-width: 350px;
+            width: 320px;
+            backdrop-filter: blur(20px);
+            text-align: left;
+        }
+
+        .price-card.featured {
+            border-color: var(--color-primary);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+            position: relative;
+        }
+
+        .price-card.featured::before {
+            content: 'Mais Popular';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-primary);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .price-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            margin-bottom: 8px;
         }
 
         .price-amount {
             font-size: 3rem;
-            font-weight: 700;
+            font-weight: 800;
         }
 
-        .price-period {
-            color: #94a3b8;
+        .price-amount span {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
         }
 
         .price-features {
             list-style: none;
-            margin: 30px 0;
-            text-align: left;
+            margin: 32px 0;
         }
 
         .price-features li {
-            padding: 8px 0;
-            color: #cbd5e1;
+            padding: 10px 0;
+            color: var(--color-text-muted);
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .price-features li::before {
-            content: "✓ ";
-            color: #22c55e;
+            content: "✓";
+            color: var(--color-success);
+            font-weight: 700;
+        }
+
+        .price-cta {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            text-align: center;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .price-cta.primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .price-cta.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .price-cta.secondary {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--color-primary-light);
+            border: 1px solid var(--color-border);
+        }
+
+        .price-cta.secondary:hover {
+            background: rgba(99, 102, 241, 0.2);
         }
 
         /* Footer */
         footer {
             text-align: center;
             padding: 40px 0;
-            color: #64748b;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--color-text-muted);
             font-size: 0.9rem;
         }
 
+        footer a {
+            color: var(--color-primary-light);
+            text-decoration: none;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2rem;
+            .navbar {
+                padding: 16px 0;
+            }
+
+            .nav-buttons a {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+
+            .hero {
+                padding: 40px 0;
             }
 
             .hero p {
-                font-size: 1rem;
+                font-size: 1.1rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .cta-primary,
+            .cta-secondary {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .demo-preview {
+                margin: 40px 16px 0;
+            }
+
+            .features {
+                padding: 40px 0;
+            }
+
+            .pricing-cards {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .price-card {
+                width: 100%;
+                max-width: 350px;
             }
         }
     </style>
 </head>
 
 <body>
+    <div class="bg-effects"></div>
+
     <div class="container">
         <nav class="navbar">
             <a href="/" class="logo">🤖 Robo<span>Tutor</span></a>
             <div class="nav-buttons">
                 <a href="{% url 'login' %}" class="btn-login">Entrar</a>
-                <a href="{% url 'register' %}" class="btn-register">Cadastrar</a>
+                <a href="{% url 'register' %}" class="btn-register">Começar Grátis</a>
             </div>
         </nav>
 
         <section class="hero">
-            <h1>Aprenda Robótica<br>com seu <span>Professor IA</span></h1>
-            <p>Tire dúvidas sobre Arduino, sensores, motores e projetos de robótica com um tutor inteligente disponível
-                24 horas.</p>
-            <a href="{% url 'register' %}" class="cta-button">Começar Agora Grátis 🚀</a>
+            <div class="hero-badge">
+                <span>●</span> Disponível 24h por dia
+            </div>
+            <h1>Aprenda Robótica<br>com seu <span class="gradient-text">Tutor IA</span></h1>
+            <p>Tire dúvidas sobre Arduino, sensores, motores e projetos de robótica com um assistente inteligente que
+                nunca dorme.</p>
+
+            <div class="cta-buttons">
+                <a href="{% url 'register' %}" class="cta-primary">
+                    Começar Agora 🚀
+                </a>
+                <a href="{% url 'login' %}" class="cta-secondary">
+                    Já tenho conta
+                </a>
+            </div>
+
+            <div class="demo-preview">
+                <div class="demo-header">
+                    <div class="avatar">🤖</div>
+                    <div>
+                        <div class="name">Robbie</div>
+                        <div class="status">● Online</div>
+                    </div>
+                </div>
+                <div class="demo-message">
+                    Olá! 👋 Sou o Robbie, seu tutor de robótica. Posso te ajudar com Arduino, sensores, motores, LEDs,
+                    programação e muito mais. O que você quer construir hoje? 🛠️
+                </div>
+            </div>
         </section>
 
         <section class="features">
             <div class="feature-card">
                 <div class="feature-icon">🎓</div>
                 <h3>Aprenda no Seu Ritmo</h3>
-                <p>Pergunte quantas vezes precisar, sem julgamentos. O robô está sempre pronto para explicar de novo.
-                </p>
+                <p>Pergunte quantas vezes precisar, sem julgamentos. O Robbie está sempre pronto para explicar de novo,
+                    de um jeito diferente.</p>
             </div>
 
             <div class="feature-card">
                 <div class="feature-icon">⚡</div>
                 <h3>Respostas Instantâneas</h3>
-                <p>Não espere pela aula. Receba ajuda imediata para seus projetos e desafios de robótica.</p>
+                <p>Não espere pela próxima aula. Receba ajuda imediata para seus projetos e desafios, a qualquer hora do
+                    dia ou da noite.</p>
             </div>
 
             <div class="feature-card">
                 <div class="feature-icon">💾</div>
                 <h3>Histórico Salvo</h3>
-                <p>Todas as suas conversas ficam guardadas. Volte quando quiser para revisar o que aprendeu.</p>
+                <p>Todas as suas conversas ficam guardadas. Volte quando quiser para revisar códigos e explicações que
+                    você recebeu.</p>
             </div>
         </section>
 
         <section class="pricing">
-            <h2>Simples e Acessível</h2>
-            <div class="price-card">
-                <div class="price-amount">R$ 4,99</div>
-                <div class="price-period">por semana</div>
-                <ul class="price-features">
-                    <li>50 mensagens por dia</li>
-                    <li>Histórico ilimitado</li>
-                    <li>Acesso a todos os tópicos</li>
-                    <li>Suporte prioritário</li>
-                </ul>
-                <a href="{% url 'register' %}" class="cta-button" style="width: 100%;">Testar Grátis</a>
+            <h2>Planos Simples e Acessíveis</h2>
+            <p>Comece grátis e faça upgrade quando quiser mais</p>
+
+            <div class="pricing-cards">
+                <div class="price-card">
+                    <div class="price-name">Gratuito</div>
+                    <div class="price-amount">R$ 0 <span>/mês</span></div>
+                    <ul class="price-features">
+                        <li>10 mensagens por dia</li>
+                        <li>Histórico de 7 dias</li>
+                        <li>Tópicos básicos</li>
+                    </ul>
+                    <a href="{% url 'register' %}" class="price-cta secondary">Começar Grátis</a>
+                </div>
+
+                <div class="price-card featured">
+                    <div class="price-name">Premium</div>
+                    <div class="price-amount">R$ 4,99 <span>/semana</span></div>
+                    <ul class="price-features">
+                        <li>50 mensagens por dia</li>
+                        <li>Histórico ilimitado</li>
+                        <li>Todos os tópicos</li>
+                        <li>Suporte prioritário</li>
+                    </ul>
+                    <a href="{% url 'register' %}" class="price-cta primary">Testar Premium</a>
+                </div>
             </div>
         </section>
     </div>
 
     <footer>
-        <p>© 2026 RoboTutor. Feito com 💜 para futuros engenheiros.</p>
+        <p>© 2026 RoboTutor. Feito com 💜 para futuros engenheiros</p>
     </footer>
 </body>
 
