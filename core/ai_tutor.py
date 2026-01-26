@@ -1,5 +1,6 @@
 import os
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 import time
 import random
@@ -43,9 +44,10 @@ eletrônica básica, projetos maker, impressão 3D, robótica educacional, e qua
 """
 
 # Modelos em ordem de preferência (fallback)
-MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-flash-lite-latest", "gemini-pro-latest"]
+MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"]
 MAX_RETRIES = 3
 BASE_DELAY = 1.0  # segundos
+
 
 def get_response_stream(user_message):
     """Gera resposta com retry automático e fallback de modelos."""
@@ -56,17 +58,21 @@ def get_response_stream(user_message):
             time.sleep(0.02)
         return
 
-    genai.configure(api_key=api_key)
+    # Initialize the client with the new SDK
+    client = genai.Client(api_key=api_key)
     
     for model_name in MODELS:
         for attempt in range(MAX_RETRIES):
             try:
-                model = genai.GenerativeModel(
-                    model_name=model_name,
-                    system_instruction=SYSTEM_INSTRUCTION
+                # Use the new streaming API
+                response = client.models.generate_content_stream(
+                    model=model_name,
+                    contents=user_message,
+                    config=types.GenerateContentConfig(
+                        system_instruction=SYSTEM_INSTRUCTION
+                    )
                 )
                 
-                response = model.generate_content(user_message, stream=True)
                 for chunk in response:
                     if chunk.text:
                         yield chunk.text
@@ -95,4 +101,3 @@ def get_response_stream(user_message):
     
     # Se todos os modelos falharam
     yield "😓 **Estou sobrecarregado!**\n\nTodos os meus modelos estão ocupados no momento. Por favor, aguarde alguns segundos e tente novamente."
-
