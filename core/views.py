@@ -34,8 +34,11 @@ def index(request):
     # Conversations for Sidebar
     conversations = Conversation.objects.filter(user=request.user).order_by('-created_at')
     
-    # Projects for Sidebar
-    projects = Project.objects.filter(user=request.user)
+    # Projects for Sidebar (with error handling for missing table)
+    try:
+        projects = Project.objects.filter(user=request.user)
+    except Exception:
+        projects = []
 
     return render(request, 'core/index.html', {
         'remaining': remaining,
