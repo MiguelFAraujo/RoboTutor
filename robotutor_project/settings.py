@@ -32,9 +32,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-1gx8*d=t6a*x)90&24%43l$e!)+0hj1a6k^jx_&_lmt%3cu=l0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*'] if DEBUG else ['.vercel.app', 'localhost', '127.0.0.1', 'robo-tutor.vercel.app']
 
 # Application definition
 
