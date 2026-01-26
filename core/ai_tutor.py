@@ -2,6 +2,7 @@ import os
 import google.generativeai as genai
 from dotenv import load_dotenv
 import time
+import random
 
 # Carrega variáveis de ambiente
 load_dotenv()
@@ -41,7 +42,13 @@ Você pode ajudar com: Arduino, Raspberry Pi, sensores, motores, LEDs, programa�
 eletrônica básica, projetos maker, impressão 3D, robótica educacional, e qualquer dúvida técnica!
 """
 
+# Modelos em ordem de preferência (fallback)
+MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-flash-lite-latest", "gemini-pro-latest"]
+MAX_RETRIES = 3
+BASE_DELAY = 1.0  # segundos
+
 def get_response_stream(user_message):
+    """Gera resposta com retry automático e fallback de modelos."""
     if not api_key:
         fake_response = "⚠️ **Modo de Teste:** API Key não encontrada...\n\nPara acender um LED, você precisa de um resistor de 220 ohms..."
         for char in fake_response:
@@ -49,28 +56,43 @@ def get_response_stream(user_message):
             time.sleep(0.02)
         return
 
-    try:
-        genai.configure(api_key=api_key)
-        # Usando gemini-2.0-flash-lite (limites mais altos no tier gratuito)
-        model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash-lite",
-            system_instruction=SYSTEM_INSTRUCTION
-        )
-        
-        response = model.generate_content(user_message, stream=True)
-        for chunk in response:
-            if chunk.text:
-                yield chunk.text
-    except Exception as e:
-        error_msg = str(e)
-        if "429" in error_msg:
-             yield "😓 **Ufa, cansei!**\n\nAtingimos o limite de velocidade do meu cérebro gratuito por hoje. Tente novamente em alguns segundos ou upgrade sua chave API."
-        elif "404" in error_msg and "models/" in error_msg:
-             # List available models for debugging
-             try:
-                 models = [m.name for m in genai.list_models()]
-                 yield f"❌ **Erro de Modelo:** O modelo configurado não foi encontrado.\n\nModelos disponíveis: {', '.join(models)}\n\nErro original: {error_msg}"
-             except:
-                 yield f"❌ Erro ao conectar com o cérebro do robô: {error_msg}"
-        else:
-            yield f"❌ Erro ao conectar com o cérebro do robô: {error_msg}"
+    genai.configure(api_key=api_key)
+    
+    for model_name in MODELS:
+        for attempt in range(MAX_RETRIES):
+            try:
+                model = genai.GenerativeModel(
+                    model_name=model_name,
+                    system_instruction=SYSTEM_INSTRUCTION
+                )
+                
+                response = model.generate_content(user_message, stream=True)
+                for chunk in response:
+                    if chunk.text:
+                        yield chunk.text
+                return  # Sucesso - sai da função
+                
+            except Exception as e:
+                error_msg = str(e)
+                
+                # Rate limit - espera e tenta de novo
+                if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                    if attempt < MAX_RETRIES - 1:
+                        delay = BASE_DELAY * (2 ** attempt) + random.uniform(0, 1)
+                        time.sleep(delay)
+                        continue  # Retry com mesmo modelo
+                    # Se esgotou retries, tenta próximo modelo
+                    break
+                
+                # Modelo não encontrado - tenta próximo
+                elif "404" in error_msg and "models/" in error_msg:
+                    break  # Vai para próximo modelo
+                
+                # Outro erro - retorna mensagem
+                else:
+                    yield f"❌ Erro ao conectar com o cérebro do robô: {error_msg}"
+                    return
+    
+    # Se todos os modelos falharam
+    yield "😓 **Estou sobrecarregado!**\n\nTodos os meus modelos estão ocupados no momento. Por favor, aguarde alguns segundos e tente novamente."
+
