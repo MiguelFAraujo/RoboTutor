@@ -36,7 +36,7 @@ def index(request):
     
     # Projects for Sidebar (with error handling for missing table)
     try:
-        projects = Project.objects.filter(user=request.user)
+        projects = list(Project.objects.filter(user=request.user))
     except Exception:
         projects = []
 
@@ -173,7 +173,10 @@ def delete_conversation(request, conversation_id):
 @login_required
 def projects_list(request):
     """List all user's projects."""
-    projects = Project.objects.filter(user=request.user)
+    try:
+        projects = list(Project.objects.filter(user=request.user))
+    except Exception:
+        projects = []
     return render(request, 'core/projects.html', {
         'projects': projects,
         'user': request.user
