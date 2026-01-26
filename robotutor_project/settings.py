@@ -121,10 +121,19 @@ WSGI_APPLICATION = 'robotutor_project.wsgi.application'
 
 # Use PostgreSQL in production (Vercel), SQLite locally
 DATABASE_URL = os.getenv('DATABASE_URL', '')
+IS_VERCEL = os.getenv('VERCEL') == '1'
 
-# Only use PostgreSQL if DATABASE_URL is valid (starts with postgres)
-if DATABASE_URL and DATABASE_URL.startswith('postgres'):
+if IS_VERCEL:
+    if not DATABASE_URL:
+        raise RuntimeError("CRITICAL: DATABASE_URL is missing on Vercel!")
+    if not DATABASE_URL.startswith('postgres'):
+        raise RuntimeError(f"CRITICAL: DATABASE_URL invalid. Starts with: {DATABASE_URL[:10]}...")
+    
     DATABASES = {
+        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600, ssl_require=True)
+    }
+elif DATABASE_URL:
+     DATABASES = {
         'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
 else:
