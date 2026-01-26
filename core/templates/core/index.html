@@ -15,6 +15,9 @@
 
 <body>
     <div class="app-container">
+        <!-- Mobile Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -25,16 +28,16 @@
 
             <div class="history-list">
                 {% for conv in conversations %}
-                <a onclick="loadConversation({{ conv.id }})" class="history-item" id="conv-{{ conv.id }}">
-                    {{ conv.title }}
-                </a>
+                <div class="history-item" id="conv-{{ conv.id }}">
+                    <span class="title" onclick="loadConversation({{ conv.id }})">{{ conv.title }}</span>
+                    <button class="delete-btn" onclick="deleteConversation({{ conv.id }}, event)"
+                        title="Apagar conversa">🗑️</button>
+                </div>
                 {% endfor %}
             </div>
 
             <div class="user-profile">
-                <a href="{% url 'landing' %}"
-                    style="display: block; padding: 8px; margin-bottom: 10px; background: #1e293b; border-radius: 8px; color: #94a3b8; text-decoration: none; text-align: center;">🏠
-                    Página Inicial</a>
+                <a href="{% url 'landing' %}">🏠 Página Inicial</a>
                 <div style="font-size: 0.8rem; color: #94a3b8;">
                     👋 {{ user.first_name|default:user.username }}<br>
                     <span style="color: #64748b;">{{ user.email }}</span><br>
@@ -92,18 +95,42 @@
         let currentConversationId = null;
 
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
         }
 
         function startNewChat() {
             currentConversationId = null;
             document.getElementById('chat-messages').innerHTML = `
                 <div class="message bot">
-                    Olá! Sou o Miguel, seu instrutor de robótica. O que vamos construir hoje? 🛠️
+                    Olá! Sou o Robbie, seu tutor de robótica. O que vamos construir hoje? 🛠️
                 </div>`;
-            // Remove active class from sidebar items
             document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
             if (window.innerWidth <= 768) toggleSidebar();
+        }
+
+        async function deleteConversation(id, event) {
+            event.stopPropagation();
+            if (!confirm('Tem certeza que deseja apagar esta conversa?')) return;
+
+            try {
+                const response = await fetch(`/conversation/${id}/delete/`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    const item = document.getElementById(`conv-${id}`);
+                    if (item) item.remove();
+                    if (currentConversationId == id) {
+                        startNewChat();
+                    }
+                } else {
+                    alert('Erro ao apagar conversa');
+                }
+            } catch (e) {
+                alert('Erro ao apagar conversa');
+            }
         }
 
         async function loadConversation(id) {
@@ -111,7 +138,6 @@
             const chatBox = document.getElementById('chat-messages');
             chatBox.innerHTML = '<div style="text-align:center; color:#666;">Carregando...</div>';
 
-            // Highlight active
             document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
             const activeItem = document.getElementById(`conv-${id}`);
             if (activeItem) activeItem.classList.add('active');
@@ -164,11 +190,9 @@
                     })
                 });
 
-                // Get updated conversation ID if new
                 const serverConvId = response.headers.get('X-Conversation-Id');
                 if (serverConvId && !currentConversationId) {
                     currentConversationId = serverConvId;
-                    // Ideally refresh sidebar here, but for now user can refresh page to see title
                 }
 
                 if (response.status === 403) {

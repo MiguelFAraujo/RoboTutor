@@ -10,8 +10,10 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('api/chat', views.chat_api, name='chat_api'),
     path('history/<int:conversation_id>/', views.get_conversation_history, name='history'),
+    path('conversation/<int:conversation_id>/delete/', views.delete_conversation, name='delete_conversation'),
     path('register/', views.register, name='register'),
     path('subscribe/', billing.create_checkout_session, name='subscribe'),
     path('webhook/', billing.stripe_webhook, name='webhook'),
     # path('accounts/', include('django.contrib.auth.urls')),
 ]
+

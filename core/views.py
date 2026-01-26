@@ -126,3 +126,17 @@ def register(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
+
+@csrf_exempt
+@login_required
+def delete_conversation(request, conversation_id):
+    """Delete a conversation and all its messages."""
+    if request.method == 'DELETE':
+        try:
+            conversation = Conversation.objects.get(id=conversation_id, user=request.user)
+            conversation.delete()
+            return JsonResponse({'success': True})
+        except Conversation.DoesNotExist:
+            return JsonResponse({'error': 'Conversation not found'}, status=404)
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
