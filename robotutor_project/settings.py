@@ -107,9 +107,10 @@ WSGI_APPLICATION = 'robotutor_project.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Use PostgreSQL in production (Vercel), SQLite locally
-DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = os.getenv('DATABASE_URL', '')
 
-if DATABASE_URL:
+# Only use PostgreSQL if DATABASE_URL is valid (starts with postgres)
+if DATABASE_URL and DATABASE_URL.startswith('postgres'):
     DATABASES = {
         'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
