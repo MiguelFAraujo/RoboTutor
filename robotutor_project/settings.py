@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
 
-    'core',
+    'core.apps.CoreConfig',
 ]
 
 SITE_ID = 1
@@ -57,7 +57,8 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 LOGIN_REDIRECT_URL = '/chat/'
 LOGOUT_REDIRECT_URL = '/'
 
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+# ⚠️ PROTOCOLO: 'https' na Vercel/Produção, 'http' em Local
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https' if os.getenv('VERCEL') == '1' or not DEBUG else 'http'
 
 ACCOUNT_LOGIN_ON_GET = False
 SOCIALACCOUNT_LOGIN_ON_GET = False
@@ -79,7 +80,6 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-# Só adiciona o APP via settings se as chaves existirem para evitar erros de inicialização
 if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
     SOCIALACCOUNT_PROVIDERS['google']['APP'] = {
         'client_id': GOOGLE_CLIENT_ID,
@@ -113,7 +113,10 @@ ROOT_URLCONF = 'robotutor_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates', BASE_DIR / 'core' / 'templates'],
+        'DIRS': [
+            BASE_DIR / 'templates',
+            BASE_DIR / 'core' / 'templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -165,25 +168,29 @@ USE_I18N = True
 USE_TZ = True
 
 # --------------------------------------------------
-# SECURITY (Vercel)
+# SECURITY (LOCAL x VERCEL)
 # --------------------------------------------------
 CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
     'https://robo-tutor.vercel.app',
     'https://*.vercel.app',
 ]
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-if not DEBUG:
+# 🔒 SSL SOMENTE EM PRODUÇÃO (VERCEL)
+if not DEBUG and os.getenv("VERCEL") == "1":
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
 # --------------------------------------------------
+# DEFAULT
+# --------------------------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --------------------------------------------------
-# LOGGING (Fundamental para depurar erros 500 no Vercel)
+# LOGGING
 # --------------------------------------------------
 LOGGING = {
     'version': 1,
