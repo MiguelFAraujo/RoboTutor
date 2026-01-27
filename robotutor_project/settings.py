@@ -2,14 +2,24 @@ from pathlib import Path
 import os
 import dj_database_url
 
+# Carrega .env explicitamente (Fundamental para local)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # --------------------------------------------------
 # BASE
 # --------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'unsafe-dev-key')
-
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+# SECURITY WARNING: don't run with debug turned on in production!
+# Em local, se não houver VERCEL, assume DEBUG=True por segurança
+if os.getenv('VERCEL') == '1':
+    DEBUG = os.getenv('DEBUG', 'False') == 'True'
+else:
+    DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
