@@ -206,9 +206,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Only enable strict security in production (not DEBUG)
 if not DEBUG:
     # HTTPS/SSL Settings
-    SECURE_SSL_REDIRECT = False # FORCE DISABLED FOR DEBUGGING
-    # SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # Allauth HTTPS
+    ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
     
     # Cookie Security
     CSRF_COOKIE_SECURE = True
