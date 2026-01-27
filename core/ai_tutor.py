@@ -1,3 +1,4 @@
+
 import os
 from google import genai
 from google.genai import types
@@ -44,7 +45,14 @@ eletrônica básica, projetos maker, impressão 3D, robótica educacional, e qua
 """
 
 # Modelos em ordem de preferência (fallback)
-MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"]
+# Priorizando 1.5-flash por estabilidade
+MODELS = [
+    "gemini-1.5-flash", 
+    "gemini-2.0-flash", 
+    "gemini-1.5-pro",
+    "gemini-1.5-flash-8b",
+    "gemini-2.0-flash-lite"
+]
 MAX_RETRIES = 3
 BASE_DELAY = 1.0  # segundos
 
@@ -61,7 +69,10 @@ def get_response_stream(user_message):
     # Initialize the client with the new SDK
     client = genai.Client(api_key=api_key)
 
+    last_error = None
+
     for model_name in MODELS:
+        print(f"Tentando modelo: {model_name}")
         for attempt in range(MAX_RETRIES):
             try:
                 # New SDK Usage
@@ -79,25 +90,18 @@ def get_response_stream(user_message):
                 return  # Sucesso - sai da função
                 
             except Exception as e:
-                error_msg = str(e)
+                last_error = str(e)
+                print(f"Erro no modelo {model_name} (tentativa {attempt+1}): {last_error}")
                 
                 # Rate limit - espera e tenta de novo
-                if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error:
                     if attempt < MAX_RETRIES - 1:
                         delay = BASE_DELAY * (2 ** attempt) + random.uniform(0, 1)
                         time.sleep(delay)
                         continue  # Retry com mesmo modelo
-                    # Se esgotou retries, tenta próximo modelo
-                    break
                 
-                # Modelo não encontrado - tenta próximo
-                elif "404" in error_msg and "models/" in error_msg:
-                    break  # Vai para próximo modelo
-                
-                # Outro erro - retorna mensagem
-                else:
-                    yield f"❌ Erro ao conectar com o cérebro do robô: {error_msg}"
-                    return
+                # Se não for rate limit ou esgotou tentativas, vai para o próximo modelo
+                break 
     
     # Se todos os modelos falharam
-    yield "😓 **Estou sobrecarregado!**\n\nTodos os meus modelos estão ocupados no momento. Por favor, aguarde alguns segundos e tente novamente."
+    yield f"😓 **Ah não!**\n\nMInha conexão falhou todos os modelos. \nErro: {last_error}"
