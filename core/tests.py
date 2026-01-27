@@ -113,3 +113,34 @@ class AITutorTests(TestCase):
             result = list(generator)
             
             self.assertTrue("Sistema Sobrecarregado" in result[0])
+
+    @patch('core.ai_tutor.Groq')
+    @patch('core.ai_tutor.genai.Client')
+    def test_groq_fallback(self, mock_genai, mock_groq):
+        from core.ai_tutor import get_response_stream, load_api_keys
+        
+        # Setup: 1 Gemini Key (that fails) + 1 Groq Key
+        with patch.dict('os.environ', {
+            'GOOGLE_API_KEY': 'key1',
+            'GROQ_API_KEY': 'groq_key'
+        }):
+            from core import ai_tutor
+            ai_tutor.api_keys = ['key1']
+            
+            # Gemini Fails with 429
+            mock_genai_instance = mock_genai.return_value
+            mock_genai_instance.models.generate_content_stream.side_effect = Exception("429 RESOURCE_EXHAUSTED")
+            
+            # Groq Succeeds
+            mock_groq_instance = mock_groq.return_value
+            mock_chunk = MagicMock()
+            mock_chunk.choices = [MagicMock(delta=MagicMock(content="Saved by Groq"))]
+            mock_groq_instance.chat.completions.create.return_value = [mock_chunk]
+            
+            # Execute
+            generator = get_response_stream("Help")
+            result = list(generator)
+            
+            # Verify
+            self.assertEqual(result[0], "Saved by Groq")
+            mock_groq.assert_called_with(api_key='groq_key')

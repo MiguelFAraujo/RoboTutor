@@ -1,7 +1,9 @@
-
 import os
+import time
+import random
 from google import genai
 from google.genai import types
+from groq import Groq
 from dotenv import load_dotenv
 import time
 import random
@@ -143,5 +145,28 @@ def get_response_stream(user_message):
             if "429" in str(last_error) or "RESOURCE_EXHAUSTED" in str(last_error):
                 break # Sai do loop de MODELOS para ir para a próxima CHAVE
     
-    # Se todas as chaves falharam
-    yield f"😓 **Sistema Sobrecarregado**\n\nMinhas {len(api_keys)} baterias (chaves de API) esgotaram. Por favor, tente novamente em alguns minutos.\n\nErro técnico: {last_error}"
+    # Se todas as chaves falharam, tenta GROQ (Backup Final)
+    if os.getenv("GROQ_API_KEY"):
+        try:
+            print("⚡ Todas as chaves Gemini falharam. Ativando Backup Groq (Llama 3)...")
+            # from groq import Groq (Imported globally)
+            groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+            
+            completion = groq_client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=[
+                    {"role": "system", "content": SYSTEM_INSTRUCTION},
+                    {"role": "user", "content": user_message}
+                ],
+                stream=True
+            )
+            
+            for chunk in completion:
+                if chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
+            return 
+            
+        except Exception as e:
+            last_error = f"Gemini e Groq falharam. Erro Groq: {e}"
+
+    yield f"😓 **Sistema Sobrecarregado**\n\nMinhas {len(api_keys)} baterias (chaves) esgotaram e meu sistema de backup falhou. \n\nErro técnico: {last_error}"
