@@ -27,9 +27,14 @@ def index(request):
         role='user'
     ).count()
     
-    LIMIT = 50 if getattr(request.user, 'profile', None) and request.user.profile.is_premium else 10
+    # Safe Profile Access
+    try:
+        is_premium = hasattr(request.user, 'profile') and request.user.profile.is_premium
+    except Exception:
+        is_premium = False
+
+    LIMIT = 50 if is_premium else 10
     remaining = max(0, LIMIT - usage_count)
-    is_premium = getattr(request.user, 'profile', None) and request.user.profile.is_premium
     
     # Conversations for Sidebar
     conversations = Conversation.objects.filter(user=request.user).order_by('-created_at')
@@ -89,7 +94,13 @@ def chat_api(request):
                 role='user'
             ).count()
             
-            LIMIT = 50 if getattr(request.user, 'profile', None) and request.user.profile.is_premium else 10
+            # Safe Profile Access
+            try:
+                is_premium = hasattr(request.user, 'profile') and request.user.profile.is_premium
+            except Exception:
+                is_premium = False
+                
+            LIMIT = 50 if is_premium else 10
             
             if usage_count >= LIMIT:
                  return JsonResponse({
