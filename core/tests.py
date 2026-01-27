@@ -102,7 +102,8 @@ class AITutorTests(TestCase):
     def test_all_keys_exhausted(self, mock_client_class):
         from core.ai_tutor import get_response_stream, load_api_keys
         
-        with patch.dict('os.environ', {'GOOGLE_API_KEY': 'key1'}):
+        # Ensure ONLY GOOGLE_API_KEY is present, NO GROQ KEY
+        with patch.dict('os.environ', {'GOOGLE_API_KEY': 'key1'}, clear=True):
             from core import ai_tutor
             ai_tutor.api_keys = ['key1']
             

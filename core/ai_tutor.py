@@ -153,7 +153,7 @@ def get_response_stream(user_message):
             groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
             
             completion = groq_client.chat.completions.create(
-                model="llama3-70b-8192",
+                model="llama-3.3-70b-versatile",
                 messages=[
                     {"role": "system", "content": SYSTEM_INSTRUCTION},
                     {"role": "user", "content": user_message}
