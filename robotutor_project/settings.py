@@ -15,10 +15,9 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Em local, se não houver VERCEL, assume DEBUG=True por segurança
-if os.getenv('VERCEL') == '1':
-    DEBUG = os.getenv('DEBUG', 'False') == 'True'
-else:
+# Forçamos DEBUG=True se não estiver na Vercel
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+if os.getenv('VERCEL') != '1':
     DEBUG = True
 
 ALLOWED_HOSTS = [
