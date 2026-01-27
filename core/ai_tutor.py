@@ -9,7 +9,26 @@ import random
 # Carrega variáveis de ambiente
 load_dotenv()
 
-api_key = os.getenv("GOOGLE_API_KEY")
+def load_api_keys():
+    """Carrega todas as chaves GOOGLE_API_KEY do ambiente."""
+    keys = []
+    # Procura por GOOGLE_API_KEY, GOOGLE_API_KEY_2, GOOGLE_API_KEY_3, etc.
+    # Começa com a principal
+    if os.getenv("GOOGLE_API_KEY"):
+        keys.append(os.getenv("GOOGLE_API_KEY"))
+    
+    # Procura por sufixos numéricos
+    i = 2
+    while True:
+        key = os.getenv(f"GOOGLE_API_KEY_{i}")
+        if not key:
+            break
+        keys.append(key)
+        i += 1
+    
+    return keys
+
+api_keys = load_api_keys()
 
 SYSTEM_INSTRUCTION = """
 Você é o Robbie, um robô tutor gentil, paciente e EXTREMAMENTE prestativo.
@@ -58,50 +77,71 @@ BASE_DELAY = 1.0  # segundos
 
 
 def get_response_stream(user_message):
-    """Gera resposta com retry automático e fallback de modelos."""
-    if not api_key:
-        fake_response = "⚠️ **Modo de Teste:** API Key não encontrada...\n\nPara acender um LED, você precisa de um resistor de 220 ohms..."
+    """Gera resposta com retry automático, fallback de modelos E rotação de chaves."""
+    if not api_keys:
+        fake_response = "⚠️ **Modo de Teste:** Nenhuma API Key encontrada...\n\nPara acender um LED, você precisa de um resistor de 220 ohms..."
         for char in fake_response:
             yield char
             time.sleep(0.02)
         return
 
-    # Initialize the client with the new SDK
-    client = genai.Client(api_key=api_key)
-
     last_error = None
-
-    for model_name in MODELS:
-        print(f"Tentando modelo: {model_name}")
-        for attempt in range(MAX_RETRIES):
-            try:
-                # New SDK Usage
-                response = client.models.generate_content_stream(
-                    model=model_name,
-                    contents=user_message,
-                    config=types.GenerateContentConfig(
-                        system_instruction=SYSTEM_INSTRUCTION
-                    )
-                )
-                
-                for chunk in response:
-                    if chunk.text:
-                        yield chunk.text
-                return  # Sucesso - sai da função
-                
-            except Exception as e:
-                last_error = str(e)
-                print(f"Erro no modelo {model_name} (tentativa {attempt+1}): {last_error}")
-                
-                # Rate limit - espera e tenta de novo
-                if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error:
-                    if attempt < MAX_RETRIES - 1:
-                        delay = BASE_DELAY * (2 ** attempt) + random.uniform(0, 1)
-                        time.sleep(delay)
-                        continue  # Retry com mesmo modelo
-                
-                # Se não for rate limit ou esgotou tentativas, vai para o próximo modelo
-                break 
     
-    # Se todos os modelos falharam
-    yield f"😓 **Ah não!**\n\nMInha conexão falhou todos os modelos. \nErro: {last_error}"
+    # Rotação de Chaves
+    for key_index, current_api_key in enumerate(api_keys):
+        # Initialize the client with the current key
+        try:
+            client = genai.Client(api_key=current_api_key)
+        except Exception as e:
+            print(f"Erro ao inicializar cliente com chave {key_index+1}: {e}")
+            continue
+
+        print(f"🔑 Usando API Key {key_index + 1}/{len(api_keys)}")
+
+        # Fallback de Modelos
+        for model_name in MODELS:
+            # print(f"  Tentando modelo: {model_name}")
+            for attempt in range(MAX_RETRIES):
+                try:
+                    # New SDK Usage
+                    response = client.models.generate_content_stream(
+                        model=model_name,
+                        contents=user_message,
+                        config=types.GenerateContentConfig(
+                            system_instruction=SYSTEM_INSTRUCTION
+                        )
+                    )
+                    
+                    for chunk in response:
+                        if chunk.text:
+                            yield chunk.text
+                    return  # Sucesso total - sai da função
+                    
+                except Exception as e:
+                    last_error = str(e)
+                    # print(f"    Erro no modelo {model_name}: {last_error}")
+                    
+                    # Rate limit - AQUI É O PULO DO GATO
+                    # Se deu rate limit na chave, NÃO adianta tentar outros modelos na mesma chave.
+                    # Tem que trocar de chave imediatamente.
+                    if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error:
+                        print(f"    ⚠️ Cota excedida na Chave {key_index + 1}. Trocando de chave...")
+                        break # Sai do loop de tentativas
+                    
+                    # Se for outro erro (ex: modelo não encontrado), tenta o próximo modelo na MESMA chave
+                    if "404" in last_error and "models/" in last_error:
+                        break # Sai do loop de tentativas para ir pro prox modelo
+
+                    # Outros erros transientes -> Retry
+                    if attempt < MAX_RETRIES - 1:
+                        time.sleep(BASE_DELAY * (2 ** attempt))
+                        continue
+                    else:
+                        break # Esgotou tentativas deste modelo
+            
+            # Se saiu do loop de tentativas, verifica se foi por COTA
+            if "429" in str(last_error) or "RESOURCE_EXHAUSTED" in str(last_error):
+                break # Sai do loop de MODELOS para ir para a próxima CHAVE
+    
+    # Se todas as chaves falharam
+    yield f"😓 **Sistema Sobrecarregado**\n\nMinhas {len(api_keys)} baterias (chaves de API) esgotaram. Por favor, tente novamente em alguns minutos.\n\nErro técnico: {last_error}"

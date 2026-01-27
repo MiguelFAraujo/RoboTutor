@@ -57,21 +57,59 @@ class BillingTests(TestCase):
 
 class AITutorTests(TestCase):
     @patch('core.ai_tutor.genai.Client')
-    @patch.dict('os.environ', {'GOOGLE_API_KEY': 'fake_key'})
-    def test_get_response_stream(self, mock_client_class):
-        from core.ai_tutor import get_response_stream
+    def test_key_rotation(self, mock_client_class):
+        from core.ai_tutor import get_response_stream, load_api_keys
         
-        # Mock Client instance
-        mock_client = mock_client_class.return_value
+        # Setup Environment with 2 keys
+        with patch.dict('os.environ', {
+            'GOOGLE_API_KEY': 'key1', 
+            'GOOGLE_API_KEY_2': 'key2'
+        }):
+            # Reload keys to pick up mocks
+            from core import ai_tutor
+            ai_tutor.api_keys = load_api_keys()
+            
+            # Setup Mock Clients
+            # Client 1 (Key 1) -> Raises 429
+            mock_client_1 = MagicMock()
+            mock_client_1.models.generate_content_stream.side_effect = Exception("429 RESOURCE_EXHAUSTED")
+            
+            # Client 2 (Key 2) -> Success
+            mock_client_2 = MagicMock()
+            mock_chunk = MagicMock()
+            mock_chunk.text = "Success from Key 2"
+            mock_client_2.models.generate_content_stream.return_value = [mock_chunk]
+            
+            # side_effect for constructor to return different clients based on api_key
+            def client_side_effect(api_key):
+                if api_key == 'key1': return mock_client_1
+                if api_key == 'key2': return mock_client_2
+                return MagicMock()
+                
+            mock_client_class.side_effect = client_side_effect
+
+            # Execute
+            generator = get_response_stream("Hi")
+            result = list(generator)
+
+            # Verify
+            self.assertEqual(result, ["Success from Key 2"])
+            
+            # Verify both clients were created
+            self.assertEqual(mock_client_class.call_count, 2)
+
+    @patch('core.ai_tutor.genai.Client')
+    def test_all_keys_exhausted(self, mock_client_class):
+        from core.ai_tutor import get_response_stream, load_api_keys
         
-        # Mock response stream
-        mock_chunk = MagicMock()
-        mock_chunk.text = "Hello world"
-        mock_client.models.generate_content_stream.return_value = [mock_chunk]
-
-        # Call generator
-        generator = get_response_stream("Hi")
-        result = list(generator)
-
-        self.assertEqual(result, ["Hello world"])
-        mock_client.models.generate_content_stream.assert_called()
+        with patch.dict('os.environ', {'GOOGLE_API_KEY': 'key1'}):
+            from core import ai_tutor
+            ai_tutor.api_keys = ['key1']
+            
+            mock_client = mock_client_class.return_value
+            mock_client.models.generate_content_stream.side_effect = Exception("429 RESOURCE_EXHAUSTED")
+            
+            generator = get_response_stream("Hi")
+            result = list(generator)
+            
+            self.assertTrue("Sistema Sobrecarregado" in result[0])
