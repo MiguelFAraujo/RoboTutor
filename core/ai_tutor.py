@@ -60,11 +60,11 @@ def get_response_stream(user_message):
 
     # Initialize the client with the new SDK
     client = genai.Client(api_key=api_key)
-    
+
     for model_name in MODELS:
         for attempt in range(MAX_RETRIES):
             try:
-                # Use the new streaming API
+                # New SDK Usage
                 response = client.models.generate_content_stream(
                     model=model_name,
                     contents=user_message,

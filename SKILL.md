@@ -40,3 +40,15 @@ description: CORE SKILL. Always active. Contains the user's (Miguel Ferreira de 
 2.  **Code Quality**: Prioritize "robust and applicable" code. Miguel values ethics and best practices.
 3.  **Context Awareness**: If a task involves Python/Django, assume a high level of proficiency. If it involves Front-end, provide more scaffolding if needed, but respect his Full-Stack capability.
 4.  **Maker/IoT**: Be ready to switch contexts to C++/Hardware logic if the task relates to physical computing.
+
+## 🚨 Current Project Status (Jan 2026)
+- **Project**: RoboTutor (Django + Google AI).
+- **SDK Migration**: Migrated from `google-generativeai` to `google-genai` (v1.0+) to fix deprecation warnings.
+- **Database**:
+    - **Local**: Using SQLite (`db.sqlite3`). `DATABASE_URL` in `.env` is commented out.
+    - **Production**: Uses Neon PostgreSQL (requires uncommenting `.env`).
+- **Auth & Ports**:
+    - **Port**: Fixed to `8095` (`http://localhost:8095`) to avoid Chrome HSTS redirect loops on 8000/8080.
+    - **Google Login**: Configured globally in `settings.py` (deleted specific DB `SocialApp` entries).
+    - **Callback URI**: `http://localhost:8095/accounts/google/login/callback/`.
+- **Theme**: "I, Robot" Asimov Theme (Industrial Metals, Gear Animations) implemented.

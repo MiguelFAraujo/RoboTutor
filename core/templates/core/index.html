@@ -49,8 +49,7 @@
                         id="project-{{ project.id }}">
                         <span class="title"
                             onclick="{% if project.conversation %}loadConversation({{ project.conversation.id }}){% endif %}">
-                            {% if project.status == 'completed' %}✅{% elif project.status == 'paused' %}⏸️{% else %}🔧{%
-                            endif %}
+                            {% if project.status == 'completed' %}✅{% elif project.status == 'paused' %}⏸️{% else %}🔧{% endif %}
                             {{ project.title }}
                         </span>
                         <button class="delete-btn" onclick="deleteProject({{ project.id }}, event)"
