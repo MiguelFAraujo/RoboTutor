@@ -59,7 +59,7 @@ INSTALLED_APPS = [
     'core', # App do RoboTutor
 ]
 
-SITE_ID = 2
+SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
