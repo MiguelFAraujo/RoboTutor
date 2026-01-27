@@ -8,40 +8,22 @@ def fix_sites_and_profiles(apps, schema_editor):
     domain = 'robo-tutor.vercel.app'
     name = 'RoboTutor'
     
-    # Ensure Site 1 exists and is correct
+    # Ensure Site 1 exists and is correct (matches SITE_ID=1)
     site, created = Site.objects.get_or_create(id=1, defaults={'domain': domain, 'name': name})
     if not created:
         site.domain = domain
         site.name = name
         site.save()
-    print(f"Site 1 sync: {domain}")
-
-    # --- FIX 2: SOCIAL APP (GOOGLE) ---
-    # We must ensure the SocialApp exists in DB and is linked to the Site
-    SocialApp = apps.get_model('socialaccount', 'SocialApp')
-    client_id = os.getenv('GOOGLE_CLIENT_ID', '')
-    secret = os.getenv('GOOGLE_CLIENT_SECRET', '')
     
-    if client_id and secret:
-        app, created = SocialApp.objects.get_or_create(
-            provider='google',
-            defaults={
-                'name': 'Google Login',
-                'client_id': client_id,
-                'secret': secret,
-            }
-        )
-        if not created:
-            app.client_id = client_id
-            app.secret = secret
-            app.save()
-        
-        # Link to the current site
-        app.sites.add(site)
-        print(f"SocialApp 'google' synced and linked to Site 1")
+    # Also update any other sites to be sure
+    for s in Site.objects.exclude(id=1):
+        s.domain = domain
+        s.name = name
+        s.save()
+    
+    print(f"Sites synchronized to {domain}")
 
-
-    # --- FIX 3: MISSING PROFILES ---
+    # --- FIX 2: MISSING PROFILES ---
     User = apps.get_model(settings.AUTH_USER_MODEL)
     Profile = apps.get_model('core', 'Profile')
     
@@ -60,7 +42,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('core', '0001_initial'),
         ('sites', '0001_initial'),
-        ('socialaccount', '0001_initial'),
     ]
 
     operations = [
