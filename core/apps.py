@@ -9,7 +9,20 @@ class CoreConfig(AppConfig):
     name = 'core'
 
     def ready(self):
-        # Executa SOMENTE na Vercel
+        # Sincronização automática do Site
+        try:
+            from django.contrib.sites.models import Site
+            is_vercel = os.getenv('VERCEL') == '1'
+            domain = 'robo-tutor.vercel.app' if is_vercel else '127.0.0.1:8000'
+            
+            site, created = Site.objects.get_or_create(id=1, defaults={'domain': domain, 'name': 'RoboTutor'})
+            if not created and site.domain != domain:
+                site.domain = domain
+                site.save()
+                logger.info(f"Site synchronized to: {domain}")
+        except Exception:
+            pass
+            
         if os.getenv('VERCEL') != '1':
             return
 
