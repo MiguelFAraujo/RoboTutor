@@ -62,7 +62,6 @@ AUTHENTICATION_BACKENDS = [
 # Allauth Modern Settings (v65+)
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_SIGNUP_FIELDS = ['email', 'password']  # Simplified for email-only
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 LOGIN_REDIRECT_URL = '/chat/'
