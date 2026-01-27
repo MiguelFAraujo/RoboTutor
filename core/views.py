@@ -10,6 +10,7 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import MessageLog, Conversation, Project
 from .ai_tutor import get_response_stream
+from .utils import get_user_daily_limit, get_daily_usage, check_message_limit
 
 def landing(request):
     # If user is logged in, go straight to chat
@@ -19,22 +20,22 @@ def landing(request):
 
 @login_required
 def index(request):
-    # Tiered Limit Logic
-    today = timezone.now().date()
-    usage_count = MessageLog.objects.filter(
-        user=request.user,
-        timestamp__date=today,
-        role='user'
-    ).count()
+    # Centralized Limit Logic
+    limit = get_user_daily_limit(request.user)
+    usage = get_daily_usage(request.user)
+    remaining = max(0, limit - usage)
+
+    # Calculate percentage for progress bar
+    if limit > 0:
+        progress_percentage = int((remaining / limit) * 100)
+    else:
+        progress_percentage = 100
     
-    # Safe Profile Access
+    # Check if premium for UI flag
     try:
         is_premium = hasattr(request.user, 'profile') and request.user.profile.is_premium
     except Exception:
         is_premium = False
-
-    LIMIT = 50 if is_premium else 10
-    remaining = max(0, LIMIT - usage_count)
     
     # Conversations for Sidebar
     conversations = Conversation.objects.filter(user=request.user).order_by('-created_at')
@@ -47,7 +48,8 @@ def index(request):
 
     return render(request, 'core/index.html', {
         'remaining': remaining,
-        'limit': LIMIT,
+        'limit': limit,
+        'progress_percentage': progress_percentage,
         'is_premium': is_premium,
         'user': request.user,
         'conversations': conversations,
@@ -86,26 +88,13 @@ def chat_api(request):
             if not user_message:
                 return JsonResponse({'error': 'Empty message'}, status=400)
 
-            # Check Limit
-            today = timezone.now().date()
-            usage_count = MessageLog.objects.filter(
-                user=request.user,
-                timestamp__date=today,
-                role='user'
-            ).count()
+            # Check Limit via Utils
+            allowed, limit, remaining = check_message_limit(request.user)
             
-            # Safe Profile Access
-            try:
-                is_premium = hasattr(request.user, 'profile') and request.user.profile.is_premium
-            except Exception:
-                is_premium = False
-                
-            LIMIT = 50 if is_premium else 10
-            
-            if usage_count >= LIMIT:
+            if not allowed:
                  return JsonResponse({
                      "error": "LIMIT_REACHED", 
-                     "response": f"🚫 **Limite Diário Atingido ({LIMIT}/{LIMIT})**"
+                     "response": f"🚫 **Limite Diário Atingido ({limit}/{limit})**"
                  }, status=403)
 
             # Get or Create Conversation

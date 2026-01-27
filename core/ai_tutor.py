@@ -128,33 +128,31 @@ def get_response_stream(user_message):
                     last_error = str(e)
                     # print(f"    Erro no modelo {model_name}: {last_error}")
                     
-                    # Rate limit - AQUI É O PULO DO GATO
-                    # Se deu rate limit na chave, NÃO adianta tentar outros modelos na mesma chave.
-                    # Tem que trocar de chave imediatamente.
+                    # Rate Limit Handling
+                    # If the key is exhausted (429/ResourceExhausted), switch keys immediately.
                     if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error:
-                        print(f"    ⚠️ Cota excedida na Chave {key_index + 1}. Trocando de chave...")
-                        break # Sai do loop de tentativas
+                        print(f"    ⚠️ Quota exceeded on Key {key_index + 1}. Switching keys...")
+                        break # Exit retry loop to switch key
                     
-                    # Se for outro erro (ex: modelo não encontrado), tenta o próximo modelo na MESMA chave
+                    # If model not found (404), try next model on SAME key
                     if "404" in last_error and "models/" in last_error:
-                        break # Sai do loop de tentativas para ir pro prox modelo
+                        break # Exit retry loop to switch model
 
-                    # Outros erros transientes -> Retry
+                    # Transient errors -> Retry
                     if attempt < MAX_RETRIES - 1:
                         time.sleep(BASE_DELAY * (2 ** attempt))
                         continue
                     else:
-                        break # Esgotou tentativas deste modelo
+                        break # Exhausted retries for this model
             
-            # Se saiu do loop de tentativas, verifica se foi por COTA
+            # Check if failure was due to quota to break model loop
             if "429" in str(last_error) or "RESOURCE_EXHAUSTED" in str(last_error):
-                break # Sai do loop de MODELOS para ir para a próxima CHAVE
+                break # Exit model loop to switch key
     
-    # Se todas as chaves falharam, tenta GROQ (Backup Final)
+    # Fallback to Groq (Llama 3)
     if os.getenv("GROQ_API_KEY"):
         try:
-            print("⚡ Todas as chaves Gemini falharam. Ativando Backup Groq (Llama 3)...")
-            # from groq import Groq (Imported globally)
+            print("⚡ All Gemini keys failed. Activating Groq Backup (Llama 3)...")
             groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
             
             completion = groq_client.chat.completions.create(
@@ -172,6 +170,6 @@ def get_response_stream(user_message):
             return 
             
         except Exception as e:
-            last_error = f"Gemini e Groq falharam. Erro Groq: {e}"
+            last_error = f"Gemini and Groq failed. Groq error: {e}"
 
-    yield f"😓 **Sistema Sobrecarregado**\n\nMinhas {len(api_keys)} baterias (chaves) esgotaram e meu sistema de backup falhou. \n\nErro técnico: {last_error}"
+    yield f"😓 **Sistema Sobrecarregado**\n\nNossos servidores estão enfrentando alta demanda. Por favor, tente novamente em alguns instantes.\n\nErro técnico: {last_error}"

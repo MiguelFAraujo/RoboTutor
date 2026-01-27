@@ -49,8 +49,13 @@
                         id="project-{{ project.id }}">
                         <span class="title"
                             onclick="{% if project.conversation %}loadConversation({{ project.conversation.id }}){% endif %}">
-                            {% if project.status == 'completed' %}✅{% elif project.status == 'paused' %}⏸️{% else %}🔧{%
-                            endif %}
+                            {% if project.status == 'completed' %}
+                            ✅
+                            {% elif project.status == 'paused' %}
+                            ⏸️
+                            {% else %}
+                            🔧
+                            {% endif %}
                             {{ project.title }}
                         </span>
                         <button class="delete-btn" onclick="deleteProject({{ project.id }}, event)"
@@ -78,7 +83,7 @@
                         <span>💬 Mensagens Hoje:</span>
                         <div style="width: 100%; background: #334155; height: 6px; border-radius: 3px; margin: 5px 0;">
                             <div
-                                style="width: {% widthratio remaining limit 100 %}%; background: #3b82f6; height: 100%; border-radius: 3px;">
+                                style="width: {{ progress_percentage }}%; background: #3b82f6; height: 100%; border-radius: 3px;">
                             </div>
                         </div>
                         <span style="color: #94a3b8;">{{ remaining }} de {{ limit }} restantes</span>
@@ -283,3 +288,5 @@
         3. Proteger sua existência
     </div>
 </body>
+
+</html>
