@@ -57,11 +57,11 @@ def index(request):
     })
 
 
-def stream_and_save_response(user, conversation, user_message):
+def stream_and_save_response(user, conversation, user_message, user_data=None):
     """Generator that streams AI response and saves it when complete."""
     full_response = ""
     
-    for chunk in get_response_stream(user_message):
+    for chunk in get_response_stream(user_message, user_data):
         full_response += chunk
         yield chunk
     
@@ -118,9 +118,22 @@ def chat_api(request):
                 content_length=len(user_message)
             )
 
+            # Prepare User Data for AI Context
+            try:
+                is_premium = hasattr(request.user, 'profile') and request.user.profile.is_premium
+            except:
+                is_premium = False
+
+            user_data = {
+                'name': request.user.first_name or request.user.username,
+                'is_premium': is_premium,
+                'limit': limit,
+                'remaining': remaining
+            }
+
             # Stream Response and save when complete
             return StreamingHttpResponse(
-                stream_and_save_response(request.user, conversation, user_message), 
+                stream_and_save_response(request.user, conversation, user_message, user_data), 
                 content_type='text/plain',
                 headers={'X-Conversation-Id': str(conversation.id)}
             )
