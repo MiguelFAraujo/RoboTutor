@@ -14,6 +14,9 @@ except ImportError:
 # --------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv('SECRET_KEY') or 'django-insecure-m9!(8%^5h_&@*!_@!_@!_@!_@!_@!_@!_@!_'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 # Forçamos DEBUG=True se não estiver na Vercel
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
@@ -101,8 +104,12 @@ if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
 # --------------------------------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+]
 
+if not DEBUG:
+    MIDDLEWARE += ['whitenoise.middleware.WhiteNoiseMiddleware']
+
+MIDDLEWARE += [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
