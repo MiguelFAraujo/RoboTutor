@@ -1,46 +1,51 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.http import JsonResponse, StreamingHttpResponse
-import json
-import os
 from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
-from datetime import timedelta
+from django.contrib.auth.models import User
+import json
+
 from .models import MessageLog, Conversation, Project
 from .ai_tutor import get_response_stream
 from .utils import get_user_daily_limit, get_daily_usage, check_message_limit
+from .forms import CustomUserCreationForm
+
+
+# ============================================================
+# HELPERS (CRÍTICO PRA NÃO DAR ERRO 500)
+# ============================================================
+
+def user_is_premium(user):
+    try:
+        return user.profile.is_premium
+    except Exception:
+        return False
+
+
+# ============================================================
+# PAGES
+# ============================================================
 
 def landing(request):
-    # If user is logged in, go straight to chat
     if request.user.is_authenticated:
         return redirect('chat')
     return render(request, 'core/landing.html')
 
-@login_required
+
+@login_required(login_url='/accounts/login/')
 def index(request):
-    # Centralized Limit Logic
     limit = get_user_daily_limit(request.user)
     usage = get_daily_usage(request.user)
     remaining = max(0, limit - usage)
 
-    # Calculate percentage for progress bar
-    if limit > 0:
-        progress_percentage = int((remaining / limit) * 100)
-    else:
-        progress_percentage = 100
-    
-    # Check if premium for UI flag
-    try:
-        is_premium = hasattr(request.user, 'profile') and request.user.profile.is_premium
-    except Exception:
-        is_premium = False
-    
-    # Conversations for Sidebar
-    conversations = Conversation.objects.filter(user=request.user).order_by('-created_at')
-    
-    # Projects for Sidebar (with error handling for missing table)
+    progress_percentage = int((remaining / limit) * 100) if limit > 0 else 100
+    is_premium = user_is_premium(request.user)
+
+    conversations = Conversation.objects.filter(
+        user=request.user
+    ).order_by('-created_at')
+
     try:
         projects = list(Project.objects.filter(user=request.user))
     except Exception:
@@ -57,15 +62,17 @@ def index(request):
     })
 
 
+# ============================================================
+# CHAT
+# ============================================================
+
 def stream_and_save_response(user, conversation, user_message, user_data=None):
-    """Generator that streams AI response and saves it when complete."""
     full_response = ""
-    
+
     for chunk in get_response_stream(user_message, user_data):
         full_response += chunk
         yield chunk
-    
-    # Save bot response after streaming completes
+
     if full_response and conversation:
         MessageLog.objects.create(
             user=user,
@@ -77,82 +84,91 @@ def stream_and_save_response(user, conversation, user_message, user_data=None):
 
 
 @csrf_exempt
-@login_required
+@login_required(login_url='/accounts/login/')
 def chat_api(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            user_message = data.get('message')
-            conversation_id = data.get('conversation_id')
-            
-            if not user_message:
-                return JsonResponse({'error': 'Empty message'}, status=400)
+    if request.method != "POST":
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-            # Check Limit via Utils
-            allowed, limit, remaining = check_message_limit(request.user)
-            
-            if not allowed:
-                 return JsonResponse({
-                     "error": "LIMIT_REACHED", 
-                     "response": f"🚫 **Limite Diário Atingido ({limit}/{limit})**"
-                 }, status=403)
+    try:
+        data = json.loads(request.body)
+        user_message = data.get('message')
+        conversation_id = data.get('conversation_id')
 
-            # Get or Create Conversation
-            conversation = None
-            if conversation_id:
-                try:
-                    conversation = Conversation.objects.get(id=conversation_id, user=request.user)
-                except Conversation.DoesNotExist:
-                    pass
-            
-            if not conversation:
-                title = (user_message[:30] + '..') if len(user_message) > 30 else user_message
-                conversation = Conversation.objects.create(user=request.user, title=title)
+        if not user_message:
+            return JsonResponse({'error': 'Empty message'}, status=400)
 
-            # Log User Message
-            MessageLog.objects.create(
-                user=request.user,
-                conversation=conversation,
-                role='user',
-                content=user_message,
-                content_length=len(user_message)
-            )
+        allowed, limit, remaining = check_message_limit(request.user)
+        if not allowed:
+            return JsonResponse({
+                "error": "LIMIT_REACHED",
+                "response": f"🚫 Limite diário atingido ({limit}/{limit})"
+            }, status=403)
 
-            # Prepare User Data for AI Context
+        conversation = None
+        if conversation_id:
             try:
-                is_premium = hasattr(request.user, 'profile') and request.user.profile.is_premium
-            except:
-                is_premium = False
+                conversation = Conversation.objects.get(
+                    id=conversation_id,
+                    user=request.user
+                )
+            except Conversation.DoesNotExist:
+                pass
 
-            user_data = {
-                'name': request.user.first_name or request.user.username,
-                'is_premium': is_premium,
-                'limit': limit,
-                'remaining': remaining
-            }
-
-            # Stream Response and save when complete
-            return StreamingHttpResponse(
-                stream_and_save_response(request.user, conversation, user_message, user_data), 
-                content_type='text/plain',
-                headers={'X-Conversation-Id': str(conversation.id)}
+        if not conversation:
+            title = user_message[:30]
+            conversation = Conversation.objects.create(
+                user=request.user,
+                title=title
             )
-            
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-            
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-@login_required
+        MessageLog.objects.create(
+            user=request.user,
+            conversation=conversation,
+            role='user',
+            content=user_message,
+            content_length=len(user_message)
+        )
+
+        user_data = {
+            'name': request.user.first_name or request.user.username,
+            'is_premium': user_is_premium(request.user),
+            'limit': limit,
+            'remaining': remaining
+        }
+
+        return StreamingHttpResponse(
+            stream_and_save_response(
+                request.user,
+                conversation,
+                user_message,
+                user_data
+            ),
+            content_type='text/plain',
+            headers={'X-Conversation-Id': str(conversation.id)}
+        )
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required(login_url='/accounts/login/')
 def get_conversation_history(request, conversation_id):
     try:
-        conversation = Conversation.objects.get(id=conversation_id, user=request.user)
-        messages = conversation.messages.order_by('timestamp').values('role', 'content')
+        conversation = Conversation.objects.get(
+            id=conversation_id,
+            user=request.user
+        )
+        messages = conversation.messages.order_by(
+            'timestamp'
+        ).values('role', 'content')
         return JsonResponse({'messages': list(messages)})
     except Conversation.DoesNotExist:
         return JsonResponse({'error': 'Conversation not found'}, status=404)
 
-from .forms import CustomUserCreationForm
+
+# ============================================================
+# AUTH
+# ============================================================
 
 def register(request):
     if request.method == 'POST':
@@ -163,107 +179,119 @@ def register(request):
             return redirect('index')
     else:
         form = CustomUserCreationForm()
+
     return render(request, 'registration/register.html', {'form': form})
 
+
+# ============================================================
+# CONVERSATIONS
+# ============================================================
+
 @csrf_exempt
-@login_required
+@login_required(login_url='/accounts/login/')
 def delete_conversation(request, conversation_id):
-    """Delete a conversation and all its messages."""
-    if request.method == 'DELETE':
-        try:
-            conversation = Conversation.objects.get(id=conversation_id, user=request.user)
-            conversation.delete()
-            return JsonResponse({'success': True})
-        except Conversation.DoesNotExist:
-            return JsonResponse({'error': 'Conversation not found'}, status=404)
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
+    if request.method != 'DELETE':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        conversation = Conversation.objects.get(
+            id=conversation_id,
+            user=request.user
+        )
+        conversation.delete()
+        return JsonResponse({'success': True})
+    except Conversation.DoesNotExist:
+        return JsonResponse({'error': 'Conversation not found'}, status=404)
 
 
-# ============================================================================
-# Project Collection Endpoints
-# ============================================================================
+# ============================================================
+# PROJECTS
+# ============================================================
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def projects_list(request):
-    """List all user's projects."""
     try:
         projects = list(Project.objects.filter(user=request.user))
     except Exception:
         projects = []
+
     return render(request, 'core/projects.html', {
         'projects': projects,
         'user': request.user
     })
 
+
 @csrf_exempt
-@login_required
+@login_required(login_url='/accounts/login/')
 def create_project(request):
-    """Create a new project from a conversation."""
-    if request.method == 'POST':
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    data = json.loads(request.body)
+    title = data.get('title', 'Meu Projeto')
+    description = data.get('description', '')
+    conversation_id = data.get('conversation_id')
+
+    conversation = None
+    if conversation_id:
         try:
-            data = json.loads(request.body)
-            title = data.get('title', 'Meu Projeto')
-            description = data.get('description', '')
-            conversation_id = data.get('conversation_id')
-            
-            conversation = None
-            if conversation_id:
-                try:
-                    conversation = Conversation.objects.get(id=conversation_id, user=request.user)
-                except Conversation.DoesNotExist:
-                    pass
-            
-            project = Project.objects.create(
-                user=request.user,
-                conversation=conversation,
-                title=title,
-                description=description,
-                status='in_progress'
+            conversation = Conversation.objects.get(
+                id=conversation_id,
+                user=request.user
             )
-            
-            return JsonResponse({
-                'success': True, 
-                'project_id': project.id,
-                'message': 'Projeto salvo na sua coleção! 🎉'
-            })
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
+        except Conversation.DoesNotExist:
+            pass
+
+    project = Project.objects.create(
+        user=request.user,
+        conversation=conversation,
+        title=title,
+        description=description,
+        status='in_progress'
+    )
+
+    return JsonResponse({
+        'success': True,
+        'project_id': project.id
+    })
+
 
 @csrf_exempt
-@login_required
+@login_required(login_url='/accounts/login/')
 def update_project_status(request, project_id):
-    """Update project status (complete, pause, etc)."""
-    if request.method in ['POST', 'PATCH']:
-        try:
-            data = json.loads(request.body)
-            status = data.get('status')
-            
-            if status not in ['in_progress', 'completed', 'paused']:
-                return JsonResponse({'error': 'Invalid status'}, status=400)
-            
-            project = Project.objects.get(id=project_id, user=request.user)
-            project.status = status
-            project.save()
-            
-            return JsonResponse({'success': True, 'status': status})
-        except Project.DoesNotExist:
-            return JsonResponse({'error': 'Project not found'}, status=404)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
+    if request.method not in ['POST', 'PATCH']:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    data = json.loads(request.body)
+    status = data.get('status')
+
+    if status not in ['in_progress', 'completed', 'paused']:
+        return JsonResponse({'error': 'Invalid status'}, status=400)
+
+    try:
+        project = Project.objects.get(
+            id=project_id,
+            user=request.user
+        )
+        project.status = status
+        project.save()
+        return JsonResponse({'success': True})
+    except Project.DoesNotExist:
+        return JsonResponse({'error': 'Project not found'}, status=404)
+
 
 @csrf_exempt
-@login_required
+@login_required(login_url='/accounts/login/')
 def delete_project(request, project_id):
-    """Delete a project from collection."""
-    if request.method == 'DELETE':
-        try:
-            project = Project.objects.get(id=project_id, user=request.user)
-            project.delete()
-            return JsonResponse({'success': True})
-        except Project.DoesNotExist:
-            return JsonResponse({'error': 'Project not found'}, status=404)
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
+    if request.method != 'DELETE':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        project = Project.objects.get(
+            id=project_id,
+            user=request.user
+        )
+        project.delete()
+        return JsonResponse({'success': True})
+    except Project.DoesNotExist:
+        return JsonResponse({'error': 'Project not found'}, status=404)
