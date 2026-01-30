@@ -3,15 +3,6 @@ import os
 import dj_database_url
 
 # --------------------------------------------------
-# ENV
-# --------------------------------------------------
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass
-
-# --------------------------------------------------
 # BASE
 # --------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-local-key")
 
 # --------------------------------------------------
-# DEBUG / AMBIENTE
+# DEBUG
 # --------------------------------------------------
 DEBUG = os.getenv("VERCEL") != "1"
 
@@ -27,9 +18,10 @@ DEBUG = os.getenv("VERCEL") != "1"
 # HOSTS
 # --------------------------------------------------
 ALLOWED_HOSTS = [
-    "localhost",
     "127.0.0.1",
+    "localhost",
     "robo-tutor.vercel.app",
+    ".vercel.app",
 ]
 
 # --------------------------------------------------
@@ -63,13 +55,15 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 ACCOUNT_LOGIN_METHODS = {"email"}
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "none"
-ACCOUNT_AUTHENTICATION_METHOD = "email"
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
+
+# ⚠️ NÃO force protocolo aqui
+# O allauth resolve automaticamente
+# ACCOUNT_DEFAULT_HTTP_PROTOCOL = ...
 
 # --------------------------------------------------
 # GOOGLE OAUTH
@@ -85,21 +79,12 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-# ❗ NÃO definir APP aqui se já criou no admin
-# evita MultipleObjectsReturned
 
 # --------------------------------------------------
 # MIDDLEWARE
 # --------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-]
-
-# WhiteNoise só em produção
-if not DEBUG:
-    MIDDLEWARE += ["whitenoise.middleware.WhiteNoiseMiddleware"]
-
-MIDDLEWARE += [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -139,11 +124,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
-        "default": dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=True,
-        )
+        "default": dj_database_url.config(default=DATABASE_URL)
     }
 else:
     DATABASES = {
@@ -154,13 +135,10 @@ else:
     }
 
 # --------------------------------------------------
-# STATIC FILES
+# STATIC
 # --------------------------------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-if not DEBUG:
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # --------------------------------------------------
 # I18N
@@ -180,7 +158,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # --------------------------------------------------
-# SECURITY (PRODUÇÃO)
+# SECURITY (SÓ PRODUÇÃO)
 # --------------------------------------------------
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -189,21 +167,11 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
 
 # --------------------------------------------------
-# DEFAULT
-# --------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# --------------------------------------------------
-# LOGGING
-# --------------------------------------------------
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {"class": "logging.StreamHandler"},
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "INFO",
-    },
-}
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
