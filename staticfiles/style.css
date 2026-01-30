@@ -1,45 +1,55 @@
 /* ============================================================================
-   RoboTutor - Premium Design System
-   Modern glassmorphism with micro-animations
+   RoboTutor - I, Robot (Asimov) Theme
+   Industrial futuristic design with metallic aesthetics
    ============================================================================ */
 
 /* -------------------------------------------------------------------------- */
 /*                                 1. Variables                               */
 /* -------------------------------------------------------------------------- */
 :root {
-    /* Premium Color Palette */
-    --color-bg-primary: #030712;
-    --color-bg-secondary: #0f172a;
-    --color-bg-tertiary: #1e293b;
-    --color-bg-glass: rgba(15, 23, 42, 0.7);
+    /* I, Robot Color Palette - Industrial Metallic */
+    --color-bg-primary: #0a0e14;
+    --color-bg-secondary: #111821;
+    --color-bg-tertiary: #1a232e;
+    --color-bg-glass: rgba(17, 24, 33, 0.85);
 
-    /* Accent Colors */
-    --color-primary: #6366f1;
-    --color-primary-light: #818cf8;
-    --color-primary-dark: #4f46e5;
-    --color-accent: #a855f7;
-    --color-success: #22c55e;
-    --color-warning: #f59e0b;
-    --color-error: #ef4444;
+    /* Robot Blue - NS-5 inspired */
+    --color-primary: #00b4d8;
+    --color-primary-light: #48cae4;
+    --color-primary-dark: #0096c7;
+    --color-accent: #90e0ef;
+
+    /* Industrial Metals */
+    --color-chrome: #c0c7d0;
+    --color-steel: #8b9298;
+    --color-iron: #5a6570;
+
+    /* Status Colors */
+    --color-success: #06d6a0;
+    --color-warning: #ffd166;
+    --color-error: #ef476f;
+    --color-robot-eye: #00f5ff;
+    /* VIKI eye */
 
     /* Text Colors */
-    --color-text-main: #f8fafc;
-    --color-text-secondary: #e2e8f0;
-    --color-text-muted: #94a3b8;
-    --color-text-dim: #64748b;
+    --color-text-main: #e8edf3;
+    --color-text-secondary: #c0c7d0;
+    --color-text-muted: #8b9298;
+    --color-text-dim: #5a6570;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-    --gradient-glass: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%);
-    --gradient-glow: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+    /* Gradients - Industrial */
+    --gradient-primary: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+    --gradient-metal: linear-gradient(180deg, #2a3540 0%, #1a232e 100%);
+    --gradient-glow: radial-gradient(circle at 50% 0%, rgba(0, 180, 216, 0.15) 0%, transparent 50%);
+    --gradient-robot: linear-gradient(135deg, rgba(0, 180, 216, 0.1) 0%, rgba(144, 224, 239, 0.05) 100%);
 
     /* Message Colors */
-    --color-user-msg-bg: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-    --color-bot-msg-bg: rgba(30, 41, 59, 0.8);
+    --color-user-msg-bg: linear-gradient(135deg, #0077b6 0%, #00b4d8 100%);
+    --color-bot-msg-bg: rgba(26, 35, 46, 0.9);
 
     /* Borders */
-    --color-border: rgba(99, 102, 241, 0.2);
-    --color-border-subtle: rgba(255, 255, 255, 0.05);
+    --color-border: rgba(0, 180, 216, 0.25);
+    --color-border-subtle: rgba(192, 199, 208, 0.1);
 
     /* Spacing */
     --space-xs: 0.25rem;
@@ -48,12 +58,13 @@
     --space-lg: 1.5rem;
     --space-xl: 2rem;
 
-    /* Shadows */
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
-    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
-    --shadow-glow-strong: 0 0 40px rgba(99, 102, 241, 0.4);
+    /* Shadows - Electric Glow */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(0, 180, 216, 0.4);
+    --shadow-glow-strong: 0 0 40px rgba(0, 180, 216, 0.5);
+    --shadow-robot: 0 0 30px rgba(0, 245, 255, 0.3);
 
     /* Radii */
     --radius-sm: 0.5rem;
@@ -148,28 +159,6 @@ body {
     }
 }
 
-@keyframes shimmer {
-    0% {
-        background-position: -200% 0;
-    }
-
-    100% {
-        background-position: 200% 0;
-    }
-}
-
-@keyframes float {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-5px);
-    }
-}
-
 @keyframes glow {
 
     0%,
@@ -182,8 +171,110 @@ body {
     }
 }
 
+@keyframes robotEye {
+
+    0%,
+    100% {
+        opacity: 1;
+        filter: brightness(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        filter: brightness(1.3);
+    }
+}
+
+/* Gear/Cog Rotation Animations */
+@keyframes rotateClockwise {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotateCounterClockwise {
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes gearPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px rgba(0, 180, 216, 0.5));
+    }
+
+    50% {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 10px rgba(0, 180, 216, 0.8));
+    }
+}
+
 /* -------------------------------------------------------------------------- */
-/*                              4. App Container                              */
+/*                         4. Thinking Animation (Gears)                      */
+/* -------------------------------------------------------------------------- */
+.thinking-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 24px;
+}
+
+.gear-animation {
+    position: relative;
+    width: 60px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gear {
+    position: absolute;
+    fill: var(--color-primary);
+    filter: drop-shadow(0 0 8px rgba(0, 180, 216, 0.6));
+}
+
+.gear-large {
+    width: 32px;
+    height: 32px;
+    left: 0;
+    animation: rotateClockwise 2s linear infinite;
+}
+
+.gear-small {
+    width: 22px;
+    height: 22px;
+    right: 8px;
+    top: 4px;
+    animation: rotateCounterClockwise 1.5s linear infinite;
+}
+
+.thinking-text {
+    color: var(--color-primary-light);
+    font-size: 0.9rem;
+    font-weight: 500;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* SVG Gear Icon */
+.gear-svg {
+    display: inline-block;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              5. App Container                              */
 /* -------------------------------------------------------------------------- */
 .app-container {
     display: flex;
@@ -191,33 +282,33 @@ body {
     width: 100%;
     background:
         var(--gradient-glow),
-        radial-gradient(ellipse at bottom right, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
-        var(--color-bg-primary);
+        radial-gradient(ellipse at bottom right, rgba(0, 119, 182, 0.08) 0%, transparent 50%),
+        linear-gradient(180deg, #0a0e14 0%, #111821 50%, #0a0e14 100%);
     position: relative;
     overflow: hidden;
 }
 
-/* Ambient Light Effect */
+/* Circuit Pattern Overlay */
 .app-container::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.03) 0%, transparent 40%);
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 25% 25%, rgba(0, 180, 216, 0.03) 2px, transparent 2px),
+        radial-gradient(circle at 75% 75%, rgba(0, 180, 216, 0.03) 2px, transparent 2px);
+    background-size: 60px 60px;
     pointer-events: none;
-    animation: float 20s ease-in-out infinite;
+    opacity: 0.5;
 }
 
 /* -------------------------------------------------------------------------- */
-/*                                5. Sidebar                                  */
+/*                                6. Sidebar                                  */
 /* -------------------------------------------------------------------------- */
 .sidebar-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(10, 14, 20, 0.8);
     backdrop-filter: blur(4px);
     z-index: 98;
     opacity: 0;
@@ -232,7 +323,7 @@ body {
 .sidebar {
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
-    background: var(--color-bg-glass);
+    background: var(--gradient-metal);
     backdrop-filter: blur(20px);
     border-right: 1px solid var(--color-border);
     display: flex;
@@ -242,20 +333,22 @@ body {
     transition: var(--transition-slow);
 }
 
-/* Sidebar Glow */
+/* Sidebar Tech Line */
 .sidebar::after {
     content: '';
     position: absolute;
     top: 0;
     right: 0;
-    width: 1px;
+    width: 2px;
     height: 100%;
     background: linear-gradient(to bottom,
             transparent 0%,
-            rgba(99, 102, 241, 0.3) 30%,
-            rgba(168, 85, 247, 0.2) 70%,
+            var(--color-primary) 20%,
+            var(--color-primary-light) 50%,
+            var(--color-primary) 80%,
             transparent 100%);
     pointer-events: none;
+    animation: glow 3s ease-in-out infinite;
 }
 
 .sidebar-header {
@@ -266,7 +359,7 @@ body {
 .new-chat-btn {
     width: 100%;
     padding: 14px 20px;
-    background: var(--gradient-glass);
+    background: var(--gradient-robot);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     color: var(--color-text-main);
@@ -298,7 +391,7 @@ body {
 }
 
 .new-chat-btn:hover::before {
-    opacity: 0.1;
+    opacity: 0.15;
 }
 
 .new-chat-btn span {
@@ -311,7 +404,7 @@ body {
     overflow-y: auto;
     padding: var(--space-md);
     scrollbar-width: thin;
-    scrollbar-color: var(--color-bg-tertiary) transparent;
+    scrollbar-color: var(--color-iron) transparent;
 }
 
 .history-list::-webkit-scrollbar {
@@ -319,7 +412,7 @@ body {
 }
 
 .history-list::-webkit-scrollbar-thumb {
-    background: var(--color-bg-tertiary);
+    background: var(--color-iron);
     border-radius: var(--radius-full);
 }
 
@@ -339,13 +432,13 @@ body {
 }
 
 .history-item:hover {
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(0, 180, 216, 0.1);
     color: var(--color-text-main);
     border-color: var(--color-border);
 }
 
 .history-item.active {
-    background: var(--gradient-glass);
+    background: var(--gradient-robot);
     color: var(--color-text-main);
     border-color: var(--color-primary);
     box-shadow: var(--shadow-glow);
@@ -377,13 +470,13 @@ body {
 
 .history-item .delete-btn:hover {
     opacity: 1;
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(239, 71, 111, 0.15);
 }
 
 .user-profile {
     padding: var(--space-lg);
     border-top: 1px solid var(--color-border-subtle);
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .user-profile a {
@@ -407,6 +500,7 @@ body {
     background: var(--color-primary);
     color: white;
     border-color: var(--color-primary);
+    box-shadow: var(--shadow-glow);
 }
 
 .user-profile>div {
@@ -432,7 +526,7 @@ body {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                             6. Chat Interface                              */
+/*                             7. Chat Interface                              */
 /* -------------------------------------------------------------------------- */
 .chat-interface {
     flex: 1;
@@ -444,7 +538,7 @@ body {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                              7. Chat Header                                */
+/*                              8. Chat Header                                */
 /* -------------------------------------------------------------------------- */
 .chat-header {
     padding: var(--space-lg) var(--space-xl);
@@ -473,6 +567,17 @@ body {
     background-clip: text;
 }
 
+/* Robot Eye Dot */
+.chat-header h1::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: var(--color-robot-eye);
+    border-radius: 50%;
+    box-shadow: var(--shadow-robot);
+    animation: robotEye 2s ease-in-out infinite;
+}
+
 .menu-toggle {
     display: none;
     position: absolute;
@@ -493,6 +598,7 @@ body {
 .menu-toggle:hover {
     background: var(--color-primary);
     border-color: var(--color-primary);
+    box-shadow: var(--shadow-glow);
 }
 
 /* Premium Badge */
@@ -516,23 +622,23 @@ body {
     gap: 6px;
     margin-top: 10px;
     padding: 8px 16px;
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    background: linear-gradient(135deg, #06d6a0 0%, #05a67d 100%);
     border-radius: var(--radius-full);
     font-size: 0.8rem;
     font-weight: 700;
     color: white;
     text-decoration: none;
     transition: var(--transition-base);
-    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+    box-shadow: 0 4px 15px rgba(6, 214, 160, 0.3);
 }
 
 .upgrade-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+    box-shadow: 0 6px 20px rgba(6, 214, 160, 0.4);
 }
 
 /* -------------------------------------------------------------------------- */
-/*                              8. Chat Messages                              */
+/*                              9. Chat Messages                              */
 /* -------------------------------------------------------------------------- */
 .chat-messages {
     flex: 1;
@@ -554,7 +660,7 @@ body {
 }
 
 .chat-messages::-webkit-scrollbar-thumb {
-    background: var(--color-bg-tertiary);
+    background: var(--color-iron);
     border-radius: var(--radius-full);
 }
 
@@ -577,11 +683,25 @@ body {
     border-bottom-left-radius: 6px;
 }
 
+/* Robot indicator for bot messages */
+.message.bot::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 16px;
+    width: 6px;
+    height: 6px;
+    background: var(--color-robot-eye);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--color-robot-eye);
+    animation: robotEye 2s ease-in-out infinite;
+}
+
 .message.user {
     background: var(--color-user-msg-bg);
     align-self: flex-end;
     border-bottom-right-radius: 6px;
-    box-shadow: var(--shadow-md), 0 4px 20px rgba(99, 102, 241, 0.2);
+    box-shadow: var(--shadow-md), 0 4px 20px rgba(0, 180, 216, 0.2);
 }
 
 /* Message Content Styling */
@@ -591,16 +711,17 @@ body {
 }
 
 .message code {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.5);
     padding: 2px 8px;
     border-radius: 6px;
     font-family: 'Fira Code', 'JetBrains Mono', monospace;
     font-size: 0.88em;
     border: 1px solid var(--color-border-subtle);
+    color: var(--color-accent);
 }
 
 .message pre {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     padding: var(--space-md);
     border-radius: var(--radius-md);
     overflow-x: auto;
@@ -613,6 +734,7 @@ body {
     background: none;
     padding: 0;
     border: none;
+    color: var(--color-text-secondary);
 }
 
 .message ul,
@@ -634,7 +756,7 @@ body {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                              9. Input Area                                 */
+/*                              10. Input Area                                */
 /* -------------------------------------------------------------------------- */
 .chat-input-area {
     padding: var(--space-lg) var(--space-xl);
@@ -689,7 +811,7 @@ body {
     align-items: center;
     justify-content: center;
     transition: var(--transition-base);
-    box-shadow: var(--shadow-md), 0 4px 15px rgba(99, 102, 241, 0.3);
+    box-shadow: var(--shadow-md), 0 4px 15px rgba(0, 180, 216, 0.3);
     flex-shrink: 0;
 }
 
@@ -710,7 +832,7 @@ body {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                           10. Mobile Responsive                            */
+/*                           11. Mobile Responsive                            */
 /* -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
     :root {
@@ -763,7 +885,6 @@ body {
     .chat-input {
         padding: 14px 20px;
         font-size: 16px;
-        /* Prevent iOS zoom */
     }
 
     .send-button {
@@ -803,45 +924,6 @@ body {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                            11. Loading State                               */
-/* -------------------------------------------------------------------------- */
-.loading {
-    display: inline-flex;
-    gap: 4px;
-}
-
-.loading span {
-    width: 8px;
-    height: 8px;
-    background: var(--color-primary);
-    border-radius: 50%;
-    animation: pulse 1.4s ease-in-out infinite;
-}
-
-.loading span:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.loading span:nth-child(3) {
-    animation-delay: 0.4s;
-}
-
-/* Typing indicator */
-.typing-indicator {
-    display: flex;
-    gap: 6px;
-    padding: 12px 16px;
-}
-
-.typing-indicator span {
-    width: 10px;
-    height: 10px;
-    background: var(--color-text-dim);
-    border-radius: 50%;
-    animation: pulse 1.4s ease-in-out infinite;
-}
-
-/* -------------------------------------------------------------------------- */
 /*                          12. Sidebar Sections                              */
 /* -------------------------------------------------------------------------- */
 .sidebar-section {
@@ -851,9 +933,9 @@ body {
 .section-title {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--color-text-dim);
+    color: var(--color-primary-light);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     padding: 0 var(--space-sm);
     margin-bottom: var(--space-sm);
 }
@@ -879,8 +961,8 @@ body {
     width: 100%;
     padding: 12px;
     margin-top: var(--space-md);
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
-    border: 1px solid rgba(34, 197, 94, 0.3);
+    background: linear-gradient(135deg, rgba(6, 214, 160, 0.1) 0%, rgba(6, 214, 160, 0.05) 100%);
+    border: 1px solid rgba(6, 214, 160, 0.3);
     border-radius: var(--radius-md);
     color: var(--color-success);
     font-size: 0.9rem;
@@ -890,10 +972,10 @@ body {
 }
 
 .save-project-btn:hover {
-    background: rgba(34, 197, 94, 0.2);
+    background: rgba(6, 214, 160, 0.2);
     border-color: var(--color-success);
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+    box-shadow: 0 4px 15px rgba(6, 214, 160, 0.2);
 }
 
 /* Modal Styles */
@@ -901,7 +983,7 @@ body {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(10, 14, 20, 0.85);
     backdrop-filter: blur(4px);
     z-index: 200;
     align-items: center;
@@ -973,4 +1055,25 @@ body {
 
 .modal-btn:hover {
     transform: translateY(-2px);
+}
+
+/* -------------------------------------------------------------------------- */
+/*                     13. Three Laws of Robotics Easter Egg                  */
+/* -------------------------------------------------------------------------- */
+.three-laws {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-size: 0.7rem;
+    color: var(--color-text-dim);
+    opacity: 0.3;
+    line-height: 1.4;
+    text-align: right;
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .three-laws {
+        display: none;
+    }
 }
