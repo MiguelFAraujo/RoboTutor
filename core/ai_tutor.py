@@ -5,9 +5,6 @@ from google import genai
 from google.genai import types
 from groq import Groq
 from dotenv import load_dotenv
-import time
-import random
-
 # Carrega variáveis de ambiente
 load_dotenv()
 
@@ -29,6 +26,10 @@ def load_api_keys():
         i += 1
     
     return keys
+
+if not os.getenv("GOOGLE_API_KEY"):
+    print("⚠️  AVISO: Nenhuma GOOGLE_API_KEY encontrada no ambiente (.env). O Chat não funcionará corretamente.")
+
 
 api_keys = load_api_keys()
 

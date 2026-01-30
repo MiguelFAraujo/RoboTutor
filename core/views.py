@@ -46,10 +46,7 @@ def index(request):
         user=request.user
     ).order_by('-created_at')
 
-    try:
-        projects = list(Project.objects.filter(user=request.user))
-    except Exception:
-        projects = []
+    projects = list(Project.objects.filter(user=request.user))
 
     return render(request, 'core/index.html', {
         'remaining': remaining,
@@ -148,6 +145,7 @@ def chat_api(request):
         )
 
     except Exception as e:
+        print(f"❌ Erro no chat_api: {e}")
         return JsonResponse({'error': str(e)}, status=500)
 
 
@@ -210,10 +208,7 @@ def delete_conversation(request, conversation_id):
 
 @login_required(login_url='/accounts/login/')
 def projects_list(request):
-    try:
-        projects = list(Project.objects.filter(user=request.user))
-    except Exception:
-        projects = []
+    projects = list(Project.objects.filter(user=request.user))
 
     return render(request, 'core/projects.html', {
         'projects': projects,
