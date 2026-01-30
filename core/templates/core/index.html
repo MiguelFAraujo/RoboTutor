@@ -1,225 +1,214 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
+{% extends 'base.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#020617">
-    <title>RoboTutor - Aprenda Arduino</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap"
-        rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-</head>
+{% block title %}RoboTutor - Aprenda Arduino{% endblock %}
 
-<body>
-    <div class="app-container">
-        <!-- Mobile Overlay -->
-        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+{% block content %}
+<div class="app-container">
+    <!-- Mobile Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <button onclick="startNewChat()" class="new-chat-btn">
-                    <span>+</span> Nova Conversa
-                </button>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button onclick="startNewChat()" class="new-chat-btn">
+                <span>+</span> Nova Conversa
+            </button>
+        </div>
+
+        <div class="history-list">
+            <!-- Conversations Section -->
+            <div class="sidebar-section">
+                <div class="section-title">💬 Conversas</div>
+                {% for conv in conversations %}
+                <div class="history-item" id="conv-{{ conv.id }}">
+                    <span class="title" onclick="loadConversation({{ conv.id }})">{{ conv.title }}</span>
+                    <button class="delete-btn" onclick="deleteConversation({{ conv.id }}, event)"
+                        title="Apagar">🗑️</button>
+                </div>
+                {% empty %}
+                <div class="sidebar-empty">Nenhuma conversa ainda</div>
+                {% endfor %}
             </div>
 
-            <div class="history-list">
-                <!-- Conversations Section -->
-                <div class="sidebar-section">
-                    <div class="section-title">💬 Conversas</div>
-                    {% for conv in conversations %}
-                    <div class="history-item" id="conv-{{ conv.id }}">
-                        <span class="title" onclick="loadConversation({{ conv.id }})">{{ conv.title }}</span>
-                        <button class="delete-btn" onclick="deleteConversation({{ conv.id }}, event)"
-                            title="Apagar">🗑️</button>
-                    </div>
-                    {% empty %}
-                    <div class="sidebar-empty">Nenhuma conversa ainda</div>
-                    {% endfor %}
-                </div>
-
-                <!-- Projects Section -->
-                <div class="sidebar-section">
-                    <div class="section-title">📁 Meus Projetos</div>
-                    {% for project in projects %}
-                    <div class="history-item project-item {% if project.status == 'completed' %}completed{% endif %}"
-                        id="project-{{ project.id }}">
-                        <span class="title"
-                            onclick="{% if project.conversation %}loadConversation({{ project.conversation.id }}){% endif %}">
-                            {% if project.status == 'completed' %}
-                            ✅
-                            {% elif project.status == 'paused' %}
-                            ⏸️
-                            {% else %}
-                            🔧
-                            {% endif %}
-                            {{ project.title }}
-                        </span>
-                        <button class="delete-btn" onclick="deleteProject({{ project.id }}, event)"
-                            title="Apagar">🗑️</button>
-                    </div>
-                    {% empty %}
-                    <div class="sidebar-empty">Nenhum projeto salvo</div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="user-profile">
-                <a href="{% url 'projects' %}">📁 Ver Todos os Projetos</a>
-                <a href="{% url 'landing' %}">🏠 Página Inicial</a>
-                <div>
-                    👋 {{ user.first_name|default:user.username }}<br>
-                    <span style="color: #64748b; font-size: 0.85em;">{{ user.email }}</span><br>
-
-                    <!-- Daily Limit Counter -->
-                    <div
-                        style="margin: 10px 0; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 0.85em;">
-                        {% if is_premium %}
-                        <span style="color: #10b981;">⚡ Mensagens Ilimitadas</span>
+            <!-- Projects Section -->
+            <div class="sidebar-section">
+                <div class="section-title">📁 Meus Projetos</div>
+                {% for project in projects %}
+                <div class="history-item project-item {% if project.status == 'completed' %}completed{% endif %}"
+                    id="project-{{ project.id }}">
+                    <span class="title"
+                        onclick="{% if project.conversation %}loadConversation({{ project.conversation.id }}){% endif %}">
+                        {% if project.status == 'completed' %}
+                        ✅
+                        {% elif project.status == 'paused' %}
+                        ⏸️
                         {% else %}
-                        <span>💬 Mensagens Hoje:</span>
-                        <div style="width: 100%; background: #334155; height: 6px; border-radius: 3px; margin: 5px 0;">
-                            <div
-                                style="width: {{ progress_percentage }}%; background: #3b82f6; height: 100%; border-radius: 3px;">
-                            </div>
-                        </div>
-                        <span style="color: #94a3b8;">{{ remaining }} de {{ limit }} restantes</span>
+                        🔧
                         {% endif %}
-                    </div>
-
-                    <form method="post" action="{% url 'logout' %}" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit">Sair</button>
-                    </form>
+                        {{ project.title }}
+                    </span>
+                    <button class="delete-btn" onclick="deleteProject({{ project.id }}, event)"
+                        title="Apagar">🗑️</button>
                 </div>
+                {% empty %}
+                <div class="sidebar-empty">Nenhum projeto salvo</div>
+                {% endfor %}
             </div>
-        </aside>
+        </div>
 
-        <main class="chat-interface">
-            <header class="chat-header">
-                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-                <h1>🤖 RoboTutor <span>AI</span></h1>
+        <div class="user-profile">
+            <a href="{% url 'projects' %}">📁 Ver Todos os Projetos</a>
+            <a href="{% url 'landing' %}">🏠 Página Inicial</a>
+            <div>
+                👋 {{ user.first_name|default:user.username }}<br>
+                <span style="color: #64748b; font-size: 0.85em;">{{ user.email }}</span><br>
 
-                <div>
+                <!-- Daily Limit Counter -->
+                <div
+                    style="margin: 10px 0; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 0.85em;">
                     {% if is_premium %}
-                    <span class="premium-badge">PREMIUM 👑</span>
+                    <span style="color: #10b981;">⚡ Mensagens Ilimitadas</span>
                     {% else %}
-                    <a href="{% url 'subscribe' %}" class="upgrade-btn">⚡ Seja Premium</a>
+                    <span>💬 Mensagens Hoje:</span>
+                    <div style="width: 100%; background: #334155; height: 6px; border-radius: 3px; margin: 5px 0;">
+                        <div
+                            style="width: {{ progress_percentage }}%; background: #3b82f6; height: 100%; border-radius: 3px;">
+                        </div>
+                    </div>
+                    <span style="color: #94a3b8;">{{ remaining }} de {{ limit }} restantes</span>
                     {% endif %}
                 </div>
-            </header>
 
-            <div id="chat-messages" class="chat-messages">
-                <div class="message bot">
-                    Olá, <strong>{{ user.first_name|default:user.username }}</strong>! 👋<br><br>
-                    Sou o Robbie, seu amigo robô tutor de robótica! 🤖✨ Vamos construir algo incrível juntos? 🛠️
-                </div>
-            </div>
-
-            <div class="chat-input-area">
-                <form class="input-form" onsubmit="handleFormSubmit(event)">
+                <form method="post" action="{% url 'logout' %}" style="display:inline;">
                     {% csrf_token %}
-                    <input type="text" id="user-input" class="chat-input" placeholder="Pergunte sobre Arduino..."
-                        aria-label="Sua mensagem" autocomplete="off">
-                    <button type="submit" class="send-button" aria-label="Enviar mensagem">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-                        </svg>
-                    </button>
+                    <button type="submit">Sair</button>
                 </form>
             </div>
-        </main>
-    </div>
+        </div>
+    </aside>
 
-    <script>
-        let currentConversationId = null;
+    <main class="chat-interface">
+        <header class="chat-header">
+            <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+            <h1>🤖 RoboTutor <span>AI</span></h1>
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
-        }
+            <div>
+                {% if is_premium %}
+                <span class="premium-badge">PREMIUM 👑</span>
+                {% else %}
+                <a href="{% url 'subscribe' %}" class="upgrade-btn">⚡ Seja Premium</a>
+                {% endif %}
+            </div>
+        </header>
 
-        function startNewChat() {
-            currentConversationId = null;
-            document.getElementById('chat-messages').innerHTML = `
+        <div id="chat-messages" class="chat-messages">
+            <div class="message bot">
+                Olá, <strong>{{ user.first_name|default:user.username }}</strong>! 👋<br><br>
+                Sou o Robbie, seu amigo robô tutor de robótica! 🤖✨ Vamos construir algo incrível juntos? 🛠️
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <form class="input-form" onsubmit="handleFormSubmit(event)">
+                {% csrf_token %}
+                <input type="text" id="user-input" class="chat-input" placeholder="Pergunte sobre Arduino..."
+                    aria-label="Sua mensagem" autocomplete="off">
+                <button type="submit" class="send-button" aria-label="Enviar mensagem">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+    let currentConversationId = null;
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+
+    function startNewChat() {
+        currentConversationId = null;
+        document.getElementById('chat-messages').innerHTML = `
                 <div class="message bot">
                     Olá! Sou o Robbie, seu tutor de robótica. O que vamos construir hoje? 🛠️
                 </div>`;
-            document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
-            if (window.innerWidth <= 768) toggleSidebar();
-        }
+        document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+        if (window.innerWidth <= 768) toggleSidebar();
+    }
 
-        async function deleteConversation(id, event) {
-            event.stopPropagation();
-            if (!confirm('Tem certeza que deseja apagar esta conversa?')) return;
+    async function deleteConversation(id, event) {
+        event.stopPropagation();
+        if (!confirm('Tem certeza que deseja apagar esta conversa?')) return;
 
-            try {
-                const response = await fetch(`/conversation/${id}/delete/`, {
-                    method: 'DELETE'
-                });
-                if (response.ok) {
-                    const item = document.getElementById(`conv-${id}`);
-                    if (item) item.remove();
-                    if (currentConversationId == id) {
-                        startNewChat();
-                    }
-                } else {
-                    alert('Erro ao apagar conversa');
+        try {
+            const response = await fetch(`/conversation/${id}/delete/`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                const item = document.getElementById(`conv-${id}`);
+                if (item) item.remove();
+                if (currentConversationId == id) {
+                    startNewChat();
                 }
-            } catch (e) {
+            } else {
                 alert('Erro ao apagar conversa');
             }
+        } catch (e) {
+            alert('Erro ao apagar conversa');
         }
+    }
 
-        async function loadConversation(id) {
-            currentConversationId = id;
-            const chatBox = document.getElementById('chat-messages');
-            chatBox.innerHTML = '<div style="text-align:center; color:#666;">Carregando...</div>';
+    async function loadConversation(id) {
+        currentConversationId = id;
+        const chatBox = document.getElementById('chat-messages');
+        chatBox.innerHTML = '<div style="text-align:center; color:#666;">Carregando...</div>';
 
-            document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
-            const activeItem = document.getElementById(`conv-${id}`);
-            if (activeItem) activeItem.classList.add('active');
+        document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+        const activeItem = document.getElementById(`conv-${id}`);
+        if (activeItem) activeItem.classList.add('active');
 
-            try {
-                const response = await fetch(`/history/${id}/`);
-                const data = await response.json();
+        try {
+            const response = await fetch(`/history/${id}/`);
+            const data = await response.json();
 
-                chatBox.innerHTML = '';
-                if (data.messages) {
-                    data.messages.forEach(msg => {
-                        const div = document.createElement('div');
-                        div.className = `message ${msg.role === 'user' ? 'user' : 'bot'}`;
-                        div.innerHTML = msg.role === 'user' ? msg.content : marked.parse(msg.content);
-                        chatBox.appendChild(div);
-                    });
-                }
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch (e) {
-                chatBox.innerHTML = '<div style="color:red">Erro ao carregar conversa.</div>';
+            chatBox.innerHTML = '';
+            if (data.messages) {
+                data.messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = `message ${msg.role === 'user' ? 'user' : 'bot'}`;
+                    div.innerHTML = msg.role === 'user' ? msg.content : marked.parse(msg.content);
+                    chatBox.appendChild(div);
+                });
             }
-
-            if (window.innerWidth <= 768) toggleSidebar();
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (e) {
+            chatBox.innerHTML = '<div style="color:red">Erro ao carregar conversa.</div>';
         }
 
-        async function sendMessage() {
-            const input = document.getElementById('user-input');
-            const chatBox = document.getElementById('chat-messages');
-            const text = input.value.trim();
+        if (window.innerWidth <= 768) toggleSidebar();
+    }
 
-            if (!text) return;
+    async function sendMessage() {
+        const input = document.getElementById('user-input');
+        const chatBox = document.getElementById('chat-messages');
+        const text = input.value.trim();
 
-            chatBox.innerHTML += `<div class="message user">${text}</div>`;
-            input.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
+        if (!text) return;
 
-            const botMessageDiv = document.createElement('div');
-            botMessageDiv.className = 'message bot';
-            botMessageDiv.innerHTML = `
+        chatBox.innerHTML += `<div class="message user">${text}</div>`;
+        input.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        const botMessageDiv = document.createElement('div');
+        botMessageDiv.className = 'message bot';
+        botMessageDiv.innerHTML = `
                 <div class="thinking-container">
                     <div class="gear-animation">
                         <svg class="gear gear-large" viewBox="0 0 24 24">
@@ -231,62 +220,60 @@
                     </div>
                     <span class="thinking-text">Processando...</span>
                 </div>`;
-            chatBox.appendChild(botMessageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+        chatBox.appendChild(botMessageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
 
-            try {
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: text,
-                        conversation_id: currentConversationId
-                    })
-                });
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: text,
+                    conversation_id: currentConversationId
+                })
+            });
 
-                const serverConvId = response.headers.get('X-Conversation-Id');
-                if (serverConvId && !currentConversationId) {
-                    currentConversationId = serverConvId;
-                }
-
-                if (response.status === 403) {
-                    const data = await response.json();
-                    botMessageDiv.innerHTML = marked.parse(data.response);
-                    return;
-                }
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let accumulatedText = "";
-                botMessageDiv.innerHTML = "";
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    const chunk = decoder.decode(value, { stream: true });
-                    accumulatedText += chunk;
-                    botMessageDiv.innerHTML = marked.parse(accumulatedText);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                }
-
-            } catch (error) {
-                botMessageDiv.innerHTML = "❌ Erro ao conectar com o cérebro do robô.";
+            const serverConvId = response.headers.get('X-Conversation-Id');
+            if (serverConvId && !currentConversationId) {
+                currentConversationId = serverConvId;
             }
+
+            if (response.status === 403) {
+                const data = await response.json();
+                botMessageDiv.innerHTML = marked.parse(data.response);
+                return;
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let accumulatedText = "";
+            botMessageDiv.innerHTML = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                accumulatedText += chunk;
+                botMessageDiv.innerHTML = marked.parse(accumulatedText);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+        } catch (error) {
+            botMessageDiv.innerHTML = "❌ Erro ao conectar com o cérebro do robô.";
         }
+    }
 
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            sendMessage();
-        }
-    </script>
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        sendMessage();
+    }
+</script>
 
-    <!-- Three Laws of Robotics - Easter Egg -->
-    <div class="three-laws">
-        1. Não causar dano a humanos<br>
-        2. Obedecer ordens humanas<br>
-        3. Proteger sua existência
-    </div>
-</body>
-
-</html>
+<!-- Three Laws of Robotics - Easter Egg -->
+<div class="three-laws">
+    1. Não causar dano a humanos<br>
+    2. Obedecer ordens humanas<br>
+    3. Proteger sua existência
+</div>
+{% endblock %}
