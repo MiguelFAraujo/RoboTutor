@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Completar Cadastro - RoboTutor{% endblock %}
+
+{% block extra_head %}
+<style>
+    body {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .register-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 40px;
+        width: 100%;
+        max-width: 420px;
+        color: white;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    p {
+        color: #94a3b8;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    input[type="text"],
+    input[type="email"] {
+        width: 100%;
+        padding: 14px 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid #334155;
+        border-radius: 12px;
+        color: white;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #6366f1;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        margin-top: 10px;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    }
+
+    .errorlist {
+        color: #fca5a5;
+        background: rgba(239, 68, 68, 0.1);
+        padding: 10px;
+        border-radius: 8px;
+        list-style: none;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-card">
+    <h1>{% trans "Sign Up" %}</h1>
+    <p>{% blocktrans with provider_name=account.get_provider.name site_name=site.name %}You are about to use your
+        {{provider_name}} account to login to {{site_name}}. As a final step, please complete the following form:{%
+        endblocktrans %}</p>
+
+    <form class="signup" id="signup_form" method="post" action="{% url 'socialaccount_signup' %}">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="errorlist">
+            {{ form.non_field_errors }}
+            {% for field in form %}
+            {% for error in field.errors %}
+            <div>{{ field.label }}: {{ error }}</div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+            <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">{{ field.help_text
+                }}</small>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+        {% endif %}
+
+        <button type="submit" class="submit-btn">{% trans "Sign Up" %} &raquo;</button>
+    </form>
+</div>
+{% endblock %}
