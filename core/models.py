@@ -19,7 +19,12 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+    # Verifica se o profile existe antes de tentar salvar
+    if hasattr(instance, 'profile'):
+        try:
+            instance.profile.save()
+        except Exception:
+            pass  # Profile ainda não existe, será criado pelo signal acima
 
 class Conversation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='conversations')
