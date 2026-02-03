@@ -86,7 +86,6 @@ def stripe_webhook(request):
                 user.profile.stripe_customer_id = stripe_customer_id
                 user.profile.stripe_subscription_id = stripe_subscription_id
                 user.profile.save()
-                user.profile.save()
                 print(f"[OK] Usuário {user.email} virou Premium!")
             except User.DoesNotExist:
                 print("[ERROR] Usuário não encontrado no webhook.")
