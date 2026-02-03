@@ -84,6 +84,12 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": ["profile", "email"],
         "AUTH_PARAMS": {"prompt": "select_account"},
         "VERIFIED_EMAIL": True,
+        # Credenciais diretamente no settings (não depende do banco)
+        "APP": {
+            "client_id": GOOGLE_CLIENT_ID,
+            "secret": GOOGLE_CLIENT_SECRET,
+            "key": "",
+        },
     }
 }
 
