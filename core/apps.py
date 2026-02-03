@@ -10,7 +10,14 @@ class CoreConfig(AppConfig):
     name = 'core'
 
     def ready(self):
-        """Sincroniza o Site automaticamente baseado no ambiente."""
+        """
+        Sincroniza o Site e configura Google OAuth automaticamente.
+        """
+        # Evita executar durante comandos de migração
+        import sys
+        if 'migrate' in sys.argv or 'makemigrations' in sys.argv:
+            return
+            
         try:
             from django.contrib.sites.models import Site
             
@@ -27,7 +34,11 @@ class CoreConfig(AppConfig):
                 site.name = 'RoboTutor'
                 site.save()
                 logger.info(f"Site synchronized: {domain}")
+            
+            # Configura Google OAuth automaticamente
+            from .adapters import setup_google_oauth
+            setup_google_oauth()
                 
         except Exception as e:
             # Ignora erros durante migração ou se o banco não estiver pronto
-            pass
+            logger.debug(f"Setup error (ignorable): {e}")

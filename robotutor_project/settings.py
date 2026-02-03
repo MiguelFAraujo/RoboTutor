@@ -67,6 +67,7 @@ LOGOUT_REDIRECT_URL = "/"
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_ADAPTER = "core.adapters.CustomSocialAccountAdapter"
 
 # ⚠️ NÃO force protocolo aqui
 # O allauth resolve automaticamente
