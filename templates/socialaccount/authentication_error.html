@@ -79,8 +79,14 @@
     <div
         style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem; text-align: left;">
         <strong>Dica de Debug:</strong><br>
-        Verifique se a variável DATABASE_URL na Vercel está correta e não contém caracteres extras (como o callback URL
-        colado no final).
+        {% if google_oauth_callback_uri %}
+        Cadastre exatamente esta URI no Google Cloud Console:<br>
+        {{ google_oauth_callback_uri }}<br><br>
+        E confirme que a variável <strong>APP_BASE_URL</strong> na Vercel usa esse mesmo domínio.
+        {% else %}
+        Defina a variável <strong>APP_BASE_URL</strong> com a URL pública do app e cadastre o callback
+        <code>/accounts/google/login/callback/</code> no Google Cloud Console.
+        {% endif %}
     </div>
 
     <a href="{% url 'account_login' %}" class="btn-primary">{% trans "Tentar Novamente" %}</a>

@@ -1,11 +1,34 @@
 from pathlib import Path
 import os
 import dj_database_url
+from urllib.parse import urlparse
 
 # --------------------------------------------------
 # BASE
 # --------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _normalize_base_url(value):
+    if not value:
+        return ""
+    return value.rstrip("/")
+
+
+def _extract_host(url):
+    if not url:
+        return ""
+    parsed = urlparse(url if "://" in url else f"https://{url}")
+    return parsed.netloc or parsed.path
+
+
+def _build_origin(url):
+    if not url:
+        return ""
+    parsed = urlparse(url if "://" in url else f"https://{url}")
+    if parsed.scheme and parsed.netloc:
+        return f"{parsed.scheme}://{parsed.netloc}"
+    return ""
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-local-key")
 
@@ -20,12 +43,31 @@ if not DEBUG and SECRET_KEY == "django-insecure-local-key":
 # --------------------------------------------------
 # HOSTS
 # --------------------------------------------------
+APP_BASE_URL = _normalize_base_url(
+    os.getenv("APP_BASE_URL")
+    or (
+        f"https://{os.getenv('VERCEL_PROJECT_PRODUCTION_URL')}"
+        if os.getenv("VERCEL_PROJECT_PRODUCTION_URL")
+        else ""
+    )
+    or (
+        f"https://{os.getenv('VERCEL_URL')}"
+        if os.getenv("VERCEL_URL") and not DEBUG
+        else ""
+    )
+)
+
+APP_HOST = _extract_host(APP_BASE_URL)
+
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     "robo-tutor.vercel.app",
     ".vercel.app",
 ]
+
+if APP_HOST and APP_HOST not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(APP_HOST)
 
 # --------------------------------------------------
 # APPS
@@ -128,6 +170,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "core.context_processors.auth_context",
             ],
         },
     },
@@ -178,6 +221,10 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8095",
     "https://robo-tutor.vercel.app",
 ]
+
+APP_ORIGIN = _build_origin(APP_BASE_URL)
+if APP_ORIGIN and APP_ORIGIN not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(APP_ORIGIN)
 
 # --------------------------------------------------
 # SECURITY (SÓ PRODUÇÃO)

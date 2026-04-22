@@ -4,6 +4,7 @@ from . import views, billing
 
 urlpatterns = [
     path('', views.landing, name='landing'),
+    path('auth/google/', views.google_login_entry, name='google_login_entry'),
     path('academy/', views.academy_catalog, name='academy'),
     path('academy/<slug:slug>/', views.academy_pack_detail, name='academy_pack'),
     path('academy/pdfs/<slug:slug>/', views.academy_pdf_download, name='academy_pdf_download'),

@@ -1,4 +1,5 @@
 from pathlib import Path
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib import messages
@@ -245,6 +246,27 @@ def register(request):
         form = CustomUserCreationForm()
 
     return render(request, 'registration/register.html', {'form': form})
+
+
+@require_GET
+def google_login_entry(request):
+    target = "/accounts/google/login/"
+    if settings.APP_BASE_URL:
+        target = f"{settings.APP_BASE_URL}{target}"
+
+    params = {}
+    next_url = request.GET.get("next")
+    process = request.GET.get("process")
+
+    if next_url:
+        params["next"] = next_url
+    if process:
+        params["process"] = process
+
+    if params:
+        target = f"{target}?{urlencode(params)}"
+
+    return redirect(target)
 
 
 # ============================================================

@@ -6,6 +6,7 @@ import os
 from django.core.exceptions import MultipleObjectsReturned
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.contrib.sites.models import Site
+from allauth.socialaccount.models import SocialApp
 
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
@@ -15,13 +16,33 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     2. Melhora tratamento de erros
     """
 
+    def _build_google_env_app(self):
+        client_id = os.getenv("GOOGLE_CLIENT_ID")
+        client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+
+        if not client_id or not client_secret:
+            return None
+
+        return SocialApp(
+            provider="google",
+            name="Google",
+            client_id=client_id,
+            secret=client_secret,
+            key="",
+            provider_id="",
+        )
+
     def get_app(self, request, provider, client_id=None):
+        provider_id = provider if isinstance(provider, str) else provider.id
+
+        if provider_id == "google":
+            env_app = self._build_google_env_app()
+            if env_app:
+                return env_app
+
         try:
             return super().get_app(request, provider, client_id=client_id)
         except MultipleObjectsReturned:
-            from allauth.socialaccount.models import SocialApp
-
-            provider_id = provider if isinstance(provider, str) else provider.id
             current_site = Site.objects.get_current(request)
             candidates = (
                 SocialApp.objects.filter(provider=provider_id, sites=current_site)
