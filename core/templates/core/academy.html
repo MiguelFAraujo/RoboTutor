@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalogo de Trilhas - RoboTutor</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        body { overflow: auto; background: #07111a; }
+        .academy-shell { max-width: 1180px; margin: 0 auto; padding: 48px 20px 72px; }
+        .academy-hero { display: grid; grid-template-columns: 1.2fr .8fr; gap: 24px; margin-bottom: 36px; }
+        .academy-panel, .pack-card { background: rgba(8, 15, 24, 0.82); border: 1px solid rgba(34, 211, 238, 0.18); border-radius: 28px; backdrop-filter: blur(14px); }
+        .academy-panel { padding: 32px; }
+        .academy-panel h1 { font-size: clamp(2.3rem, 5vw, 4rem); line-height: 1; margin-bottom: 12px; }
+        .academy-panel p { color: #b7c6d8; max-width: 60ch; }
+        .academy-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .academy-stat { padding: 18px; border-radius: 22px; background: linear-gradient(180deg, rgba(34,211,238,.12), rgba(15,23,42,.5)); }
+        .academy-stat strong { display:block; font-size:1.6rem; }
+        .academy-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:20px; }
+        .pack-card { padding: 24px; display:flex; flex-direction:column; gap:14px; }
+        .pack-chip { display:inline-flex; width:max-content; padding:6px 10px; border-radius:999px; background:#0f766e; color:#dafeff; font-size:.78rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+        .pack-card h2 { font-size: 1.35rem; }
+        .pack-card p, .pack-card li { color:#b7c6d8; }
+        .pack-meta { display:flex; flex-wrap:wrap; gap:8px; }
+        .meta-pill { padding:7px 10px; border-radius:999px; background: rgba(148,163,184,.12); color:#dbeafe; font-size:.82rem; }
+        .pack-actions { margin-top:auto; display:flex; gap:10px; flex-wrap:wrap; }
+        .cta { display:inline-flex; align-items:center; justify-content:center; padding:12px 16px; border-radius:14px; text-decoration:none; font-weight:700; }
+        .cta-primary { background: linear-gradient(135deg,#22d3ee,#0f766e); color:#04111a; }
+        .cta-secondary { border:1px solid rgba(34,211,238,.24); color:#dffcff; }
+        @media (max-width: 800px) {
+            .academy-hero { grid-template-columns: 1fr; }
+            .academy-stats { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="academy-shell">
+        <section class="academy-hero">
+            <div class="academy-panel">
+                <div class="pack-chip">Catalogo Comercial</div>
+                <h1>Trilhas prontas para vender, aplicar e escalar.</h1>
+                <p>Use estes packs como produtos de entrada, assinaturas, oficinas premium ou material institucional. Cada trilha foi pensada para resolver um problema comercial real e pode ser exportada em PDF.</p>
+            </div>
+            <div class="academy-panel">
+                <div class="academy-stats">
+                    <div class="academy-stat"><strong>{{ pack_count }}</strong><span>Packs iniciais</span></div>
+                    <div class="academy-stat"><strong>{{ platforms|length }}</strong><span>Plataformas</span></div>
+                    <div class="academy-stat"><strong>4</strong><span>Modelos de oferta</span></div>
+                </div>
+            </div>
+        </section>
+        <section class="academy-grid">
+            {% for pack in catalog %}
+            <article class="pack-card">
+                <span class="pack-chip">{{ pack.platform }}</span>
+                <h2>{{ pack.title }}</h2>
+                <p>{{ pack.hook }}</p>
+                <div class="pack-meta">
+                    <span class="meta-pill">{{ pack.difficulty }}</span>
+                    <span class="meta-pill">{{ pack.duration }}</span>
+                    <span class="meta-pill">{{ pack.project_count }} projetos</span>
+                </div>
+                <ul>
+                    {% for outcome in pack.outcomes|slice:":2" %}
+                    <li>{{ outcome }}</li>
+                    {% endfor %}
+                </ul>
+                <div class="pack-actions">
+                    <a class="cta cta-primary" href="{% url 'academy_pack' pack.slug %}">Ver pack</a>
+                    {% if pack.pdf_exists %}
+                    <a class="cta cta-secondary" href="{% url 'academy_pdf_download' pack.slug %}">Baixar PDF</a>
+                    {% else %}
+                    <span class="cta cta-secondary">PDF aguardando geracao</span>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+    </div>
+</body>
+</html>

@@ -1,8 +1,10 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.core.management import call_command
 from unittest.mock import patch, MagicMock
-from core.models import Profile
+from pathlib import Path
+from tempfile import TemporaryDirectory
 import json
 
 class BillingTests(TestCase):
@@ -11,7 +13,7 @@ class BillingTests(TestCase):
         self.user = User.objects.create_user(username='testuser', email='test@example.com', password='password')
         self.client.login(username='testuser', password='password')
 
-    @patch('core.billing.stripe.checkout.Session.create')
+    @patch('core.services.billing_service.stripe.checkout.Session.create')
     @patch.dict('os.environ', {'STRIPE_PRICE_ID': 'price_test', 'DOMAIN': 'http://testserver'})
     def test_create_checkout_session(self, mock_session_create):
         # Setup mock
@@ -49,14 +51,55 @@ class BillingTests(TestCase):
         self.assertTrue(self.user.profile.is_premium)
         self.assertEqual(self.user.profile.stripe_customer_id, 'cus_test123')
 
+    @patch('core.billing.stripe.Webhook.construct_event')
+    @patch.dict('os.environ', {'STRIPE_WEBHOOK_SECRET': 'whsec_test'})
+    def test_stripe_webhook_subscription_deleted(self, mock_construct_event):
+        self.user.profile.is_premium = True
+        self.user.profile.stripe_subscription_id = 'sub_test123'
+        self.user.profile.save()
+
+        mock_event = {
+            'type': 'customer.subscription.deleted',
+            'data': {
+                'object': {
+                    'id': 'sub_test123'
+                }
+            }
+        }
+        mock_construct_event.return_value = mock_event
+
+        response = self.client.post(reverse('webhook'), data='{}', content_type='application/json', HTTP_STRIPE_SIGNATURE='test_sig')
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.profile.is_premium)
+
+    @patch.dict('os.environ', {'STRIPE_WEBHOOK_SECRET': 'whsec_test'})
+    def test_stripe_webhook_missing_signature(self):
+        response = self.client.post(reverse('webhook'), data='{}', content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
     def test_index_view(self):
         response = self.client.get(reverse('index'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'core/index.html')
 
+    def test_chat_api_invalid_json(self):
+        response = self.client.post(
+            reverse('chat_api'),
+            data='{"message": ',
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_landing_and_academy_pages_render(self):
+        self.assertEqual(self.client.get(reverse('landing')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('academy')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('academy_pack', kwargs={'slug': 'arduino-starter-lab'})).status_code, 200)
+
 
 class AITutorTests(TestCase):
-    @patch('core.ai_tutor.genai.Client')
+    @patch('core.services.ai_service.genai.Client')
     def test_key_rotation(self, mock_client_class):
         from core.ai_tutor import get_response_stream, load_api_keys
         
@@ -66,9 +109,6 @@ class AITutorTests(TestCase):
             'GOOGLE_API_KEY_2': 'key2'
         }):
             # Reload keys to pick up mocks
-            from core import ai_tutor
-            ai_tutor.api_keys = load_api_keys()
-            
             # Setup Mock Clients
             # Client 1 (Key 1) -> Raises 429
             mock_client_1 = MagicMock()
@@ -98,15 +138,12 @@ class AITutorTests(TestCase):
             # Verify both clients were created
             self.assertEqual(mock_client_class.call_count, 2)
 
-    @patch('core.ai_tutor.genai.Client')
+    @patch('core.services.ai_service.genai.Client')
     def test_all_keys_exhausted(self, mock_client_class):
-        from core.ai_tutor import get_response_stream, load_api_keys
+        from core.ai_tutor import get_response_stream
         
         # Ensure ONLY GOOGLE_API_KEY is present, NO GROQ KEY
         with patch.dict('os.environ', {'GOOGLE_API_KEY': 'key1'}, clear=True):
-            from core import ai_tutor
-            ai_tutor.api_keys = ['key1']
-            
             mock_client = mock_client_class.return_value
             mock_client.models.generate_content_stream.side_effect = Exception("429 RESOURCE_EXHAUSTED")
             
@@ -115,19 +152,16 @@ class AITutorTests(TestCase):
             
             self.assertTrue("Sistema Sobrecarregado" in result[0])
 
-    @patch('core.ai_tutor.Groq')
-    @patch('core.ai_tutor.genai.Client')
+    @patch('core.services.ai_service.Groq')
+    @patch('core.services.ai_service.genai.Client')
     def test_groq_fallback(self, mock_genai, mock_groq):
-        from core.ai_tutor import get_response_stream, load_api_keys
+        from core.ai_tutor import get_response_stream
         
         # Setup: 1 Gemini Key (that fails) + 1 Groq Key
         with patch.dict('os.environ', {
             'GOOGLE_API_KEY': 'key1',
             'GROQ_API_KEY': 'groq_key'
         }):
-            from core import ai_tutor
-            ai_tutor.api_keys = ['key1']
-            
             # Gemini Fails with 429
             mock_genai_instance = mock_genai.return_value
             mock_genai_instance.models.generate_content_stream.side_effect = Exception("429 RESOURCE_EXHAUSTED")
@@ -145,3 +179,22 @@ class AITutorTests(TestCase):
             # Verify
             self.assertEqual(result[0], "Saved by Groq")
             mock_groq.assert_called_with(api_key='groq_key')
+
+    def test_load_api_keys_reads_numbered_env_vars(self):
+        from core.ai_tutor import load_api_keys
+
+        with patch.dict('os.environ', {
+            'GOOGLE_API_KEY': 'key1',
+            'GOOGLE_API_KEY_2': 'key2',
+            'GOOGLE_API_KEY_3': 'key3',
+        }, clear=True):
+            self.assertEqual(load_api_keys(), ['key1', 'key2', 'key3'])
+
+
+class PdfGenerationTests(TestCase):
+    def test_generate_single_pack_pdf(self):
+        with TemporaryDirectory() as temp_dir:
+            call_command('generate_product_pdfs', '--slug', 'arduino-starter-lab', '--output-dir', temp_dir)
+            generated = Path(temp_dir) / 'arduino-starter-lab.pdf'
+            self.assertTrue(generated.exists())
+            self.assertGreater(generated.stat().st_size, 0)

@@ -11,3 +11,4 @@ cryptography
 stripe
 psycopg2-binary
 dj-database-url
+reportlab

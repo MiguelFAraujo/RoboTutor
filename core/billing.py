@@ -1,14 +1,12 @@
-import stripe
-from django.conf import settings
 from django.contrib.auth.models import User
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
-import os
+from django.views.decorators.http import require_POST
+import stripe
 
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-DOMAIN = os.getenv("DOMAIN", "http://127.0.0.1:8000")
+from core.services.billing_service import create_checkout_for_user, construct_stripe_event, handle_stripe_event
 
 @login_required
 def create_checkout_session(request):
@@ -20,28 +18,13 @@ def create_checkout_session(request):
         })
     
     try:
-        price_id = os.getenv("STRIPE_PRICE_ID")
-        if not price_id:
-            return render(request, 'core/error.html', {
-                'message': 'Sistema de pagamento não configurado. Entre em contato com o suporte.',
-                'error_code': 'STRIPE_NOT_CONFIGURED'
-            })
-        
-        checkout_session = stripe.checkout.Session.create(
-            customer_email=request.user.email,
-            payment_method_types=['card'],
-            line_items=[
-                {
-                    'price': price_id,
-                    'quantity': 1,
-                },
-            ],
-            mode='subscription',
-            success_url=DOMAIN + '/chat/?success=true',
-            cancel_url=DOMAIN + '/chat/?canceled=true',
-            client_reference_id=str(request.user.id),
-        )
-        return redirect(checkout_session.url, code=303)
+        checkout_session = create_checkout_for_user(request, request.user)
+        return redirect(checkout_session.url)
+    except ValueError:
+        return render(request, 'core/error.html', {
+            'message': 'Sistema de pagamento não configurado. Entre em contato com o suporte.',
+            'error_code': 'STRIPE_NOT_CONFIGURED'
+        })
     except stripe.error.InvalidRequestError as e:
         return render(request, 'core/error.html', {
             'message': f'Erro no pagamento: {str(e.user_message or e)}',
@@ -54,40 +37,17 @@ def create_checkout_session(request):
         })
 
 @csrf_exempt
+@require_POST
 def stripe_webhook(request):
     payload = request.body
-    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-    endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
-
-    event = None
+    sig_header = request.headers.get('Stripe-Signature')
 
     try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, endpoint_secret
-        )
-    except ValueError as e:
+        event = construct_stripe_event(payload, sig_header)
+    except ValueError:
         return HttpResponse(status=400)
-    except stripe.error.SignatureVerificationError as e:
+    except stripe.error.SignatureVerificationError:
         return HttpResponse(status=400)
 
-    # Handle the event
-    if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
-        
-        # Ativar Premium
-        user_id = session.get('client_reference_id')
-        stripe_customer_id = session.get('customer')
-        stripe_subscription_id = session.get('subscription')
-        
-        if user_id:
-            try:
-                user = User.objects.get(id=user_id)
-                user.profile.is_premium = True
-                user.profile.stripe_customer_id = stripe_customer_id
-                user.profile.stripe_subscription_id = stripe_subscription_id
-                user.profile.save()
-                print(f"[OK] Usuário {user.email} virou Premium!")
-            except User.DoesNotExist:
-                print("[ERROR] Usuário não encontrado no webhook.")
-
+    handle_stripe_event(event, User)
     return HttpResponse(status=200)

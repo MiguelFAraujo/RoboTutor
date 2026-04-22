@@ -14,6 +14,9 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-local-key")
 # --------------------------------------------------
 DEBUG = os.getenv("VERCEL") != "1"
 
+if not DEBUG and SECRET_KEY == "django-insecure-local-key":
+    raise RuntimeError("SECRET_KEY precisa estar configurada em producao.")
+
 # --------------------------------------------------
 # HOSTS
 # --------------------------------------------------
@@ -155,6 +158,7 @@ else:
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+GENERATED_PDF_DIR = BASE_DIR / "generated_pdfs"
 
 # --------------------------------------------------
 # I18N
@@ -170,6 +174,8 @@ USE_TZ = True
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
+    "http://127.0.0.1:8095",
+    "http://localhost:8095",
     "https://robo-tutor.vercel.app",
 ]
 

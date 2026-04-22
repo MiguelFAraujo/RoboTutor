@@ -125,6 +125,20 @@
 
 <script>
     let currentConversationId = null;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+    function escapeHtml(value) {
+        return value
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
+    function renderMarkdownSafe(value) {
+        return marked.parse(escapeHtml(value));
+    }
 
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
@@ -149,7 +163,8 @@
 
         try {
             const response = await fetch(`/conversation/${id}/delete/`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': csrfToken }
             });
             if (response.ok) {
                 const item = document.getElementById(`conv-${id}`);
@@ -183,7 +198,7 @@
                 data.messages.forEach(msg => {
                     const div = document.createElement('div');
                     div.className = `message ${msg.role === 'user' ? 'user' : 'bot'}`;
-                    div.innerHTML = msg.role === 'user' ? msg.content : marked.parse(msg.content);
+                    div.innerHTML = msg.role === 'user' ? escapeHtml(msg.content) : renderMarkdownSafe(msg.content);
                     chatBox.appendChild(div);
                 });
             }
@@ -202,7 +217,7 @@
 
         if (!text) return;
 
-        chatBox.innerHTML += `<div class="message user">${text}</div>`;
+        chatBox.innerHTML += `<div class="message user">${escapeHtml(text)}</div>`;
         input.value = '';
         chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -226,7 +241,10 @@
         try {
             const response = await fetch('/api/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
                 body: JSON.stringify({
                     message: text,
                     conversation_id: currentConversationId
@@ -240,7 +258,7 @@
 
             if (response.status === 403) {
                 const data = await response.json();
-                botMessageDiv.innerHTML = marked.parse(data.response);
+                botMessageDiv.innerHTML = renderMarkdownSafe(data.response);
                 return;
             }
 
@@ -255,7 +273,7 @@
 
                 const chunk = decoder.decode(value, { stream: true });
                 accumulatedText += chunk;
-                botMessageDiv.innerHTML = marked.parse(accumulatedText);
+                botMessageDiv.innerHTML = renderMarkdownSafe(accumulatedText);
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
 

@@ -176,6 +176,7 @@
 
 <body>
     <div class="projects-container">
+        {% csrf_token %}
         <header class="projects-header">
             <h1>📁 Meus Projetos</h1>
             <a href="{% url 'chat' %}" class="back-btn">← Voltar ao Chat</a>
@@ -210,14 +211,42 @@
             <a href="{% url 'chat' %}">Ir para o Chat</a>
         </div>
         {% endif %}
+
+        <div style="margin-top: 48px;">
+            <div class="projects-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.7rem;">📚 Packs Comerciais Prontos</h2>
+                <a href="{% url 'academy' %}" class="back-btn">Ver Catálogo</a>
+            </div>
+            <div class="projects-grid">
+                {% for pack in catalog %}
+                <div class="project-card">
+                    <span class="project-status in_progress">{{ pack.platform }}</span>
+                    <h3 class="project-title">{{ pack.title }}</h3>
+                    <p class="project-description">{{ pack.hook }}</p>
+                    <div class="project-date">{{ pack.project_count }} projetos • {{ pack.difficulty }} • {{ pack.duration }}</div>
+                    <div class="project-actions">
+                        <a href="{% url 'academy_pack' pack.slug %}" class="back-btn" style="flex:1; justify-content:center;">Detalhes</a>
+                        {% if pack.pdf_exists %}
+                        <a href="{% url 'academy_pdf_download' pack.slug %}" class="back-btn" style="flex:1; justify-content:center;">PDF</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
     <script>
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
         async function markComplete(id) {
             try {
                 await fetch(`/api/projects/${id}/status`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
                     body: JSON.stringify({ status: 'completed' })
                 });
                 location.reload();
@@ -229,7 +258,10 @@
         async function deleteProject(id) {
             if (!confirm('Tem certeza que deseja apagar este projeto?')) return;
             try {
-                await fetch(`/api/projects/${id}/delete`, { method: 'DELETE' });
+                await fetch(`/api/projects/${id}/delete`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': csrfToken }
+                });
                 document.getElementById(`project-${id}`).remove();
             } catch (e) {
                 alert('Erro ao apagar projeto');

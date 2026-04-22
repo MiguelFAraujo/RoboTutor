@@ -4,6 +4,9 @@ from . import views, billing
 
 urlpatterns = [
     path('', views.landing, name='landing'),
+    path('academy/', views.academy_catalog, name='academy'),
+    path('academy/<slug:slug>/', views.academy_pack_detail, name='academy_pack'),
+    path('academy/pdfs/<slug:slug>/', views.academy_pdf_download, name='academy_pdf_download'),
     path('chat/', views.index, name='index'),
     path('chat/', views.index, name='chat'),  # Alias for 'chat'
     path('login/', auth_views.LoginView.as_view(), name='login'),

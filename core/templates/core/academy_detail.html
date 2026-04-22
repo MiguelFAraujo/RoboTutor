@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ pack.title }} - RoboTutor</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        body { overflow:auto; background:#07111a; }
+        .detail-shell { max-width: 1020px; margin:0 auto; padding:48px 20px 72px; }
+        .detail-card { background: rgba(8,15,24,.84); border:1px solid rgba(34,211,238,.18); border-radius:28px; padding:30px; margin-bottom:20px; }
+        .back-link { color:#8be9fd; text-decoration:none; font-weight:700; }
+        .eyebrow { display:inline-flex; padding:6px 10px; background:#0f766e; color:#ddffff; border-radius:999px; font-size:.8rem; font-weight:700; margin-bottom:12px; }
+        h1 { font-size: clamp(2rem, 4.5vw, 3.3rem); line-height:1.02; margin-bottom:12px; }
+        p, li { color:#bfd0df; }
+        .meta-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:12px; margin:22px 0; }
+        .meta-box { background:rgba(148,163,184,.10); border-radius:20px; padding:16px; }
+        .project-grid { display:grid; gap:18px; }
+        .project-card { border:1px solid rgba(34,211,238,.14); border-radius:22px; padding:20px; background:rgba(15,23,42,.45); }
+        .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:22px; }
+        .cta { display:inline-flex; align-items:center; justify-content:center; padding:12px 18px; border-radius:14px; text-decoration:none; font-weight:700; }
+        .cta-primary { background: linear-gradient(135deg,#22d3ee,#0f766e); color:#04111a; }
+        .cta-secondary { border:1px solid rgba(34,211,238,.24); color:#dffcff; }
+    </style>
+</head>
+<body>
+    <div class="detail-shell">
+        <a class="back-link" href="{% url 'academy' %}">← Voltar ao catalogo</a>
+        <section class="detail-card">
+            <span class="eyebrow">{{ pack.platform }}</span>
+            <h1>{{ pack.title }}</h1>
+            <p>{{ pack.hook }}</p>
+            <div class="meta-grid">
+                <div class="meta-box"><strong>Publico</strong><br>{{ pack.audience }}</div>
+                <div class="meta-box"><strong>Oferta</strong><br>{{ pack.offer_type }}</div>
+                <div class="meta-box"><strong>Faixa comercial</strong><br>{{ pack.price_anchor }}</div>
+                <div class="meta-box"><strong>Entrega</strong><br>{{ pack.project_count }} projetos / {{ pack.duration }}</div>
+            </div>
+            <h2>Resultados prometidos</h2>
+            <ul>
+                {% for outcome in pack.outcomes %}
+                <li>{{ outcome }}</li>
+                {% endfor %}
+            </ul>
+            <div class="actions">
+                {% if pack.pdf_exists %}
+                <a class="cta cta-primary" href="{% url 'academy_pdf_download' pack.slug %}">Baixar PDF do pack</a>
+                {% else %}
+                <span class="cta cta-secondary">Execute a geracao do PDF</span>
+                {% endif %}
+                <a class="cta cta-secondary" href="{% url 'register' %}">Usar no RoboTutor</a>
+            </div>
+        </section>
+        <section class="detail-card">
+            <h2>Projetos incluidos</h2>
+            <div class="project-grid">
+                {% for project in pack.projects %}
+                <article class="project-card">
+                    <h3>{{ project.name }}</h3>
+                    <p><strong>Problema que resolve:</strong> {{ project.problem }}</p>
+                    <p><strong>Materiais:</strong> {{ project.bill_of_materials|join:", " }}</p>
+                    <p><strong>Passos do PDF:</strong></p>
+                    <ul>
+                        {% for step in project.steps %}
+                        <li>{{ step }}</li>
+                        {% endfor %}
+                    </ul>
+                    <p><strong>Extensoes vendaveis:</strong> {{ project.extensions|join:", " }}</p>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</body>
+</html>
