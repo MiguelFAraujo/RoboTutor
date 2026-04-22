@@ -11,7 +11,7 @@ Para o RoboTutor cobrar os usuários, você precisa preencher 4 chaves no arquiv
 ## 2. Criar o Produto (Plano Mensal)
 1.  Vá em **Products (Produtos) -> Add Product**.
 2.  **Nome**: "RoboTutor Premium".
-3.  **Preço**: R$ 19,99.
+3.  **Preço**: R$ 4,99.
 4.  **Cobrança**: "Recurring" (Recorrente) -> "Monthly" (Mensal).
 5.  Salve.
 6.  Na página do produto criado, procure pelo **API ID** do preço (começa com `price_...`).

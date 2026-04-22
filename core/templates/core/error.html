@@ -77,9 +77,8 @@
     <div class="error-container">
         <div class="error-icon">🤖💔</div>
         <h1>Ops! Algo deu errado</h1>
-        <p>{{ message|default:"Não conseguimos processar sua solicitação. Mas não se preocupe, o Robbie está trabalhando
-            para resolver!" }}</p>
-        <a href="/" class="btn">🏠 Voltar ao Início</a>
+        <p>{{ message|default:"Não conseguimos processar sua solicitação no momento. Tente novamente em instantes." }}</p>
+        <a href="/" class="btn">🏠 Voltar ao início</a>
         {% if error_code %}
         <div class="error-details">
             Código do erro: {{ error_code }}

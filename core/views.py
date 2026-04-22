@@ -34,7 +34,7 @@ def parse_json_body(request):
     try:
         return json.loads(request.body or "{}"), None
     except json.JSONDecodeError:
-        return None, JsonResponse({"error": "Invalid JSON payload"}, status=400)
+        return None, JsonResponse({"error": "JSON inválido"}, status=400)
 
 
 # ============================================================
@@ -71,7 +71,7 @@ def academy_catalog(request):
 def academy_pack_detail(request, slug):
     pack = get_catalog_pack(slug)
     if not pack:
-        return render(request, "core/error.html", {"message": "Pack nao encontrado.", "error_code": "PACK_NOT_FOUND"}, status=404)
+        return render(request, "core/error.html", {"message": "Trilha não encontrada.", "error_code": "PACK_NOT_FOUND"}, status=404)
     return render(request, "core/academy_detail.html", {"pack": pack})
 
 
@@ -79,7 +79,7 @@ def academy_pack_detail(request, slug):
 def academy_pdf_download(request, slug):
     pack = get_pack_by_slug(slug)
     if not pack:
-        return render(request, "core/error.html", {"message": "Pack nao encontrado.", "error_code": "PACK_NOT_FOUND"}, status=404)
+        return render(request, "core/error.html", {"message": "Trilha não encontrada.", "error_code": "PACK_NOT_FOUND"}, status=404)
 
     pdf_path = get_pack_pdf_path(slug)
     if not pdf_path.exists():
@@ -87,7 +87,7 @@ def academy_pdf_download(request, slug):
             request,
             "core/error.html",
             {
-                "message": "O PDF deste pack ainda nao foi gerado. Execute o comando de geracao primeiro.",
+                "message": "O PDF desta trilha ainda não foi gerado. Execute o comando de geração primeiro.",
                 "error_code": "PDF_NOT_GENERATED",
             },
             status=404,
@@ -155,7 +155,7 @@ def chat_api(request):
         conversation_id = data.get('conversation_id')
 
         if not user_message:
-            return JsonResponse({'error': 'Empty message'}, status=400)
+            return JsonResponse({'error': 'Mensagem vazia'}, status=400)
 
         allowed, limit, remaining = check_message_limit(request.user)
         if not allowed:
@@ -212,7 +212,7 @@ def chat_api(request):
         )
 
     except Exception as e:
-        return JsonResponse({'error': 'Internal server error'}, status=500)
+        return JsonResponse({'error': 'Erro interno do servidor'}, status=500)
 
 
 @require_GET
@@ -228,7 +228,7 @@ def get_conversation_history(request, conversation_id):
         ).values('role', 'content')
         return JsonResponse({'messages': list(messages)})
     except Conversation.DoesNotExist:
-        return JsonResponse({'error': 'Conversation not found'}, status=404)
+        return JsonResponse({'error': 'Conversa não encontrada'}, status=404)
 
 
 # ============================================================
@@ -284,7 +284,7 @@ def delete_conversation(request, conversation_id):
         conversation.delete()
         return JsonResponse({'success': True})
     except Conversation.DoesNotExist:
-        return JsonResponse({'error': 'Conversation not found'}, status=404)
+        return JsonResponse({'error': 'Conversa não encontrada'}, status=404)
 
 
 # ============================================================
@@ -348,7 +348,7 @@ def update_project_status(request, project_id):
     status = data.get('status')
 
     if status not in ['in_progress', 'completed', 'paused']:
-        return JsonResponse({'error': 'Invalid status'}, status=400)
+        return JsonResponse({'error': 'Status inválido'}, status=400)
 
     try:
         project = Project.objects.get(
@@ -359,7 +359,7 @@ def update_project_status(request, project_id):
         project.save()
         return JsonResponse({'success': True})
     except Project.DoesNotExist:
-        return JsonResponse({'error': 'Project not found'}, status=404)
+        return JsonResponse({'error': 'Projeto não encontrado'}, status=404)
 
 
 @require_http_methods(["DELETE"])
@@ -373,4 +373,4 @@ def delete_project(request, project_id):
         project.delete()
         return JsonResponse({'success': True})
     except Project.DoesNotExist:
-        return JsonResponse({'error': 'Project not found'}, status=404)
+        return JsonResponse({'error': 'Projeto não encontrado'}, status=404)

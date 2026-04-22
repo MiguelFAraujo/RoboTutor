@@ -26,13 +26,13 @@
 </head>
 <body>
     <div class="detail-shell">
-        <a class="back-link" href="{% url 'academy' %}">← Voltar ao catalogo</a>
+        <a class="back-link" href="{% url 'academy' %}">← Voltar ao catálogo</a>
         <section class="detail-card">
             <span class="eyebrow">{{ pack.platform }}</span>
             <h1>{{ pack.title }}</h1>
             <p>{{ pack.hook }}</p>
             <div class="meta-grid">
-                <div class="meta-box"><strong>Publico</strong><br>{{ pack.audience }}</div>
+                <div class="meta-box"><strong>Público</strong><br>{{ pack.audience }}</div>
                 <div class="meta-box"><strong>Oferta</strong><br>{{ pack.offer_type }}</div>
                 <div class="meta-box"><strong>Faixa comercial</strong><br>{{ pack.price_anchor }}</div>
                 <div class="meta-box"><strong>Entrega</strong><br>{{ pack.project_count }} projetos / {{ pack.duration }}</div>
@@ -45,15 +45,15 @@
             </ul>
             <div class="actions">
                 {% if pack.pdf_exists %}
-                <a class="cta cta-primary" href="{% url 'academy_pdf_download' pack.slug %}">Baixar PDF do pack</a>
+                <a class="cta cta-primary" href="{% url 'academy_pdf_download' pack.slug %}">Baixar PDF da trilha</a>
                 {% else %}
-                <span class="cta cta-secondary">Execute a geracao do PDF</span>
+                <span class="cta cta-secondary">Execute a geração do PDF</span>
                 {% endif %}
-                <a class="cta cta-secondary" href="{% url 'register' %}">Usar no RoboTutor</a>
+                <a class="cta cta-secondary" href="{% url 'register' %}">Acessar no RoboTutor</a>
             </div>
         </section>
         <section class="detail-card">
-            <h2>Projetos incluidos</h2>
+            <h2>Projetos incluídos</h2>
             <div class="project-grid">
                 {% for project in pack.projects %}
                 <article class="project-card">
@@ -66,7 +66,7 @@
                         <li>{{ step }}</li>
                         {% endfor %}
                     </ul>
-                    <p><strong>Extensoes vendaveis:</strong> {{ project.extensions|join:", " }}</p>
+                    <p><strong>Extensões sugeridas:</strong> {{ project.extensions|join:", " }}</p>
                 </article>
                 {% endfor %}
             </div>

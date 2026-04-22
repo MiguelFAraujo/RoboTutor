@@ -1,7 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
-
-{% block title %}Erro de Login - RoboTutor{% endblock %}
+{% block title %}Erro de login - RoboTutor{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -71,14 +69,14 @@
             <line x1="12" y1="8" x2="12" y2="12"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
         </svg>
-        {% trans "Social Network Login Failure" %}
+        Não foi possível concluir o login com Google
     </h1>
 
-    <p>{% trans "An error occurred while attempting to login via your social network account." %}</p>
+    <p>Ocorreu um problema ao tentar entrar com sua conta social.</p>
 
     <div
         style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem; text-align: left;">
-        <strong>Dica de Debug:</strong><br>
+        <strong>Dica de diagnóstico:</strong><br>
         {% if google_oauth_callback_uri %}
         Cadastre exatamente esta URI no Google Cloud Console:<br>
         {{ google_oauth_callback_uri }}<br><br>
@@ -89,6 +87,6 @@
         {% endif %}
     </div>
 
-    <a href="{% url 'account_login' %}" class="btn-primary">{% trans "Tentar Novamente" %}</a>
+    <a href="{% url 'account_login' %}" class="btn-primary">Tentar novamente</a>
 </div>
 {% endblock %}

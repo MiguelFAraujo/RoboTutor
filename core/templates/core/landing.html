@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Venda e aplique trilhas de robotica com IA, PDFs premium, planos de aula e projetos para Arduino, ESP32, Raspberry Pi e micro:bit.">
-    <title>RoboTutor - Trilhas de Robotica que Vendem</title>
+    <meta name="description" content="Venda e aplique trilhas de robótica com IA, PDFs premium, planos de aula e projetos para Arduino, ESP32, Raspberry Pi e micro:bit.">
+    <title>RoboTutor - Trilhas de Robótica que Vendem</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -93,73 +93,74 @@
         <nav class="nav">
             <a class="brand" href="/">RoboTutor</a>
             <div class="nav-actions">
-                <a class="btn btn-outline" href="{% url 'academy' %}">Catalogo</a>
+                <a class="btn btn-outline" href="{% url 'academy' %}">Catálogo</a>
                 {% if go_to_app %}
                 <a class="btn btn-outline" href="{% url 'chat' %}">Abrir app</a>
                 {% else %}
                 <a class="btn btn-outline" href="{% url 'login' %}">Entrar</a>
                 {% endif %}
-                <a class="btn btn-solid" href="{% url 'register' %}">Comecar agora</a>
+                <a class="btn btn-solid" href="{% url 'register' %}">Começar agora</a>
             </div>
         </nav>
 
         <section class="hero">
             <div class="hero-copy">
                 <div class="eyebrow">Produto digital + tutor IA + trilhas maker</div>
-                <h1>Projetos de robotica que viram produto, oficina e assinatura.</h1>
-                <p>O RoboTutor deixa de ser so um chat e passa a ser um motor de oferta: packs em PDF, planos de aula, codigos e trilhas para Arduino, ESP32, Raspberry Pi e micro:bit. Ideal para vender para alunos, pais, escolas e turmas.</p>
+                <h1>Um produto de robótica que vira aula, prática e resultado.</h1>
+                <p>O RoboTutor reúne em um único produto quatro trilhas práticas em PDF, com planos de aula, códigos e projetos para Arduino, ESP32, Raspberry Pi e micro:bit. Ideal para alunos, pais, escolas e turmas.</p>
                 <div class="hero-actions">
-                    <a class="btn btn-accent" href="{% url 'academy' %}">Ver trilhas comerciais</a>
+                    <a class="btn btn-accent" href="{% url 'academy' %}">Ver trilhas incluídas</a>
                     <a class="btn btn-outline" href="{% url 'register' %}">Testar plataforma</a>
                 </div>
                 <div class="proof">
-                    <span>{{ pack_count }} packs iniciais para escalar</span>
+                    <span>Produto único por R$ 4,99</span>
+                    <span>{{ pack_count }} trilhas incluídas</span>
                     <span>{{ platforms|join:" · " }}</span>
                 </div>
             </div>
             <div class="hero-stack">
                 <article class="hero-card">
-                    <h2>O que vende melhor aqui</h2>
-                    <p>Packs praticos com promessa clara: portfolio, feira de ciencias, oficina pronta, automacao util ou trilha para professor aplicar em sala.</p>
+                    <h2>O que você recebe</h2>
+                    <p>Um produto direto ao ponto: trilhas práticas com proposta clara para estudo, oficina, portfólio e aplicação em sala.</p>
                     <div class="mini-grid">
-                        <div class="mini-tile"><strong>PDF</strong><span>Produto de entrada e bonus</span></div>
-                        <div class="mini-tile"><strong>Mentoria</strong><span>Upsell para ticket maior</span></div>
-                        <div class="mini-tile"><strong>Assinatura</strong><span>Novos projetos mensais</span></div>
-                        <div class="mini-tile"><strong>Escolas</strong><span>Planos de aula e lote institucional</span></div>
+                        <div class="mini-tile"><strong>4 trilhas</strong><span>Arduino, ESP32, Raspberry Pi e micro:bit</span></div>
+                        <div class="mini-tile"><strong>PDFs</strong><span>Material pronto para estudar e aplicar</span></div>
+                        <div class="mini-tile"><strong>Códigos</strong><span>Base prática para começar rápido</span></div>
+                        <div class="mini-tile"><strong>IA</strong><span>Suporte para tirar dúvidas na plataforma</span></div>
                     </div>
                 </article>
                 <article class="hero-card">
-                    <h2>Oferta pronta para monetizar</h2>
-                    <p>Use o pack como produto inicial. Depois ofereca comunidade, acompanhamento, aula ao vivo, kits fisicos ou assinatura com novos projetos.</p>
+                    <h2>Oferta simples e clara</h2>
+                    <p>Sem confusão de planos ou faixas de preço: é um único produto com acesso ao material essencial por R$ 4,99.</p>
                 </article>
             </div>
         </section>
 
         <section class="section">
             <div class="section-head">
-                <h2>Como o RoboTutor passa a vender melhor</h2>
-                <p>Em vez de vender “um chat com IA”, a oferta vira resultado concreto: projeto pronto, material aplicavel, acompanhamento e biblioteca de trilhas.</p>
+                <h2>Como o RoboTutor entrega valor</h2>
+                <p>Em vez de ser apenas um chat com IA, o RoboTutor entrega material concreto: trilhas prontas, projetos guiados e apoio para aprendizagem prática.</p>
             </div>
             <div class="three-grid">
                 <article class="section-card">
-                    <h3>1. Produto de entrada</h3>
-                    <p>PDF + codigo + lista de materiais para compra rapida e sem friccao. Ideal para anuncios, Instagram, comunidade e leads.</p>
+                    <h3>1. Conteúdo aplicável</h3>
+                    <p>PDF, código e lista de materiais para facilitar a execução do projeto sem enrolação.</p>
                 </article>
                 <article class="section-card">
-                    <h3>2. Oferta principal</h3>
-                    <p>Biblioteca de trilhas com IA treinada no seu acervo. O aluno compra o projeto e usa o bot para tirar duvidas no contexto certo.</p>
+                    <h3>2. Apoio com IA</h3>
+                    <p>O aluno acessa as trilhas e usa a IA para tirar dúvidas dentro do contexto do próprio material.</p>
                 </article>
                 <article class="section-card">
-                    <h3>3. Escada de valor</h3>
-                    <p>Assinatura mensal, oficina premium, programa escolar e consultoria para maker spaces ou escolas.</p>
+                    <h3>3. Uso imediato</h3>
+                    <p>Serve para estudo individual, oficina, prática em sala e montagem de portfólio.</p>
                 </article>
             </div>
         </section>
 
         <section class="section">
             <div class="section-head">
-                <h2>Catalogo inicial de packs</h2>
-                <p>Esses packs foram curados para ter apelo comercial real. Cada um pode ser gerado em PDF automaticamente pelo projeto.</p>
+                <h2>Trilhas incluídas no produto</h2>
+                <p>Estas são as trilhas que fazem parte do RoboTutor. Cada uma pode ser gerada em PDF automaticamente pelo projeto.</p>
             </div>
             <div class="catalog-grid">
                 {% for pack in catalog %}
@@ -180,7 +181,7 @@
                         {% if pack.pdf_exists %}
                         <a class="btn btn-accent" href="{% url 'academy_pdf_download' pack.slug %}">Baixar PDF</a>
                         {% else %}
-                        <span class="btn btn-outline">PDF aguardando geracao</span>
+                        <span class="btn btn-outline">PDF aguardando geração</span>
                         {% endif %}
                     </div>
                 </article>
@@ -190,56 +191,34 @@
 
         <section class="section">
             <div class="section-head">
-                <h2>Escada comercial sugerida</h2>
-                <p>Estruture as ofertas com tickets diferentes para monetizar publico frio, recorrencia e clientes institucionais.</p>
+                <h2>Produto disponível hoje</h2>
+                <p>O RoboTutor trabalha com uma oferta direta: um único produto com preço acessível e conteúdo prático.</p>
             </div>
-            <div class="offer-grid">
-                <article class="offer-card">
-                    <h3>Starter Pack</h3>
-                    <p>Produto de entrada com uma trilha ou bundle de projetos.</p>
-                    <div class="offer-price">R$ 29-97<small>ticket de entrada</small></div>
-                    <ul>
-                        <li>PDF premium</li>
-                        <li>Codigo base</li>
-                        <li>Lista de materiais</li>
-                    </ul>
-                </article>
-                <article class="offer-card featured">
-                    <h3>Assinatura RoboTutor</h3>
-                    <p>Oferta principal para recorrencia e comunidade.</p>
-                    <div class="offer-price">R$ 39-149<small>mensalidade</small></div>
-                    <ul>
-                        <li>Novos projetos todo mes</li>
-                        <li>IA para suporte</li>
-                        <li>Biblioteca completa</li>
-                        <li>Oficina ou live mensal</li>
-                    </ul>
-                </article>
-                <article class="offer-card">
-                    <h3>Pacote Escola / Oficina</h3>
-                    <p>Venda institucional com maior margem.</p>
-                    <div class="offer-price">R$ 497+<small>por turma, oficina ou licenca</small></div>
-                    <ul>
-                        <li>Planos de aula</li>
-                        <li>Materiais imprimiveis</li>
-                        <li>Versao para professor</li>
-                    </ul>
-                </article>
-            </div>
+            <article class="offer-card featured">
+                <h3>RoboTutor</h3>
+                <p>Um único produto com acesso às trilhas práticas e suporte com IA.</p>
+                <div class="offer-price">R$ 4,99<small>valor atual do produto</small></div>
+                <ul>
+                    <li>4 trilhas práticas incluídas</li>
+                    <li>PDFs e códigos-base</li>
+                    <li>Lista de materiais por projeto</li>
+                    <li>Suporte com IA dentro da plataforma</li>
+                </ul>
+            </article>
         </section>
 
         <section class="section">
             <div class="section-head">
-                <h2>Automacao dos PDFs</h2>
-                <p>O projeto agora inclui um gerador em lote. Voce pode ampliar o catalogo em codigo e exportar os packs automaticamente.</p>
+                <h2>Automação dos PDFs</h2>
+                <p>O projeto inclui um gerador em lote. Você pode ampliar o catálogo em código e exportar as trilhas automaticamente.</p>
             </div>
             <div class="automation">
                 <article class="section-card">
                     <h3>Fluxo ideal</h3>
-                    <p>1. Curar ou editar os packs em <code>core/catalog.py</code>.</p>
-                    <p>2. Rodar o comando de geracao para criar todos os PDFs.</p>
+                    <p>1. Curar ou editar as trilhas em <code>core/catalog.py</code>.</p>
+                    <p>2. Rodar o comando de geração para criar todos os PDFs.</p>
                     <p>3. Publicar os arquivos e usar a landing para vender as trilhas.</p>
-                    <p>4. Alimentar a IA com o mesmo catalogo para orientar respostas e upsells.</p>
+                    <p>4. Alimentar a IA com o mesmo catálogo para orientar respostas e ofertas complementares.</p>
                 </article>
                 <article class="section-card">
                     <h3>Comando</h3>
@@ -251,7 +230,7 @@ python manage.py generate_product_pdfs --slug esp32-iot-builder</pre>
         </section>
 
         <footer class="footer">
-            <p>RoboTutor foi reposicionado para vender conhecimento aplicavel em robotica, e nao apenas conversa de IA.</p>
+            <p>RoboTutor foi reposicionado para vender conhecimento aplicável em robótica, e não apenas conversa com IA.</p>
         </footer>
     </div>
 </body>

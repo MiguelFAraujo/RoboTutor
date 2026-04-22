@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}RoboTutor - Aprenda Arduino{% endblock %}
+{% block title %}RoboTutor - Aprenda Robótica{% endblock %}
 
 {% block content %}
 <div class="app-container">
@@ -90,13 +90,13 @@
     <main class="chat-interface">
         <header class="chat-header">
             <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-            <h1>🤖 RoboTutor <span>AI</span></h1>
+            <h1>🤖 RoboTutor <span>IA</span></h1>
 
             <div>
                 {% if is_premium %}
                 <span class="premium-badge">PREMIUM 👑</span>
                 {% else %}
-                <a href="{% url 'subscribe' %}" class="upgrade-btn">⚡ Seja Premium</a>
+                <a href="{% url 'subscribe' %}" class="upgrade-btn">⚡ Assinar por R$ 4,99</a>
                 {% endif %}
             </div>
         </header>

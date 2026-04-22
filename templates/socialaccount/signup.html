@@ -1,6 +1,4 @@
 {% extends "base.html" %}
-{% load i18n %}
-
 {% block title %}Completar Cadastro - RoboTutor{% endblock %}
 
 {% block extra_head %}
@@ -97,10 +95,9 @@
 
 {% block content %}
 <div class="register-card">
-    <h1>{% trans "Sign Up" %}</h1>
-    <p>{% blocktrans with provider_name=account.get_provider.name site_name=site.name %}You are about to use your
-        {{provider_name}} account to login to {{site_name}}. As a final step, please complete the following form:{%
-        endblocktrans %}</p>
+    <h1>Completar cadastro</h1>
+    <p>Você está prestes a usar sua conta {{ account.get_provider.name }} para entrar no {{ site.name }}.
+        Para finalizar, preencha os campos abaixo.</p>
 
     <form class="signup" id="signup_form" method="post" action="{% url 'socialaccount_signup' %}">
         {% csrf_token %}
@@ -131,7 +128,7 @@
         <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
         {% endif %}
 
-        <button type="submit" class="submit-btn">{% trans "Sign Up" %} &raquo;</button>
+        <button type="submit" class="submit-btn">Concluir cadastro &raquo;</button>
     </form>
 </div>
 {% endblock %}
