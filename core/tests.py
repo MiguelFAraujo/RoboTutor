@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.core.management import call_command
 from unittest.mock import patch, MagicMock
+from django.contrib.sites.models import Site
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import json
@@ -198,3 +199,30 @@ class PdfGenerationTests(TestCase):
             generated = Path(temp_dir) / 'arduino-starter-lab.pdf'
             self.assertTrue(generated.exists())
             self.assertGreater(generated.stat().st_size, 0)
+
+
+class SocialAdapterTests(TestCase):
+    def test_google_adapter_handles_duplicate_social_apps(self):
+        from allauth.socialaccount.models import SocialApp
+        from core.adapters import CustomSocialAccountAdapter
+
+        site = Site.objects.get(id=1)
+        app1 = SocialApp.objects.create(
+            provider='google',
+            name='Google A',
+            client_id='client-a',
+            secret='secret-a',
+        )
+        app1.sites.add(site)
+        app2 = SocialApp.objects.create(
+            provider='google',
+            name='Google B',
+            client_id='client-b',
+            secret='secret-b',
+        )
+        app2.sites.add(site)
+
+        request = self.client.get('/').wsgi_request
+        app = CustomSocialAccountAdapter().get_app(request, 'google')
+
+        self.assertEqual(app.id, app1.id)

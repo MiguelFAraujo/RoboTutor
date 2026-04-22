@@ -3,8 +3,8 @@ Custom Adapter para django-allauth
 Configura o Google OAuth automaticamente via variáveis de ambiente.
 """
 import os
+from django.core.exceptions import MultipleObjectsReturned
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from django.contrib.sites.models import Site
 
 
@@ -14,6 +14,29 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     1. Auto-conecta contas sociais a usuários existentes com mesmo email
     2. Melhora tratamento de erros
     """
+
+    def get_app(self, request, provider, client_id=None):
+        try:
+            return super().get_app(request, provider, client_id=client_id)
+        except MultipleObjectsReturned:
+            from allauth.socialaccount.models import SocialApp
+
+            provider_id = provider if isinstance(provider, str) else provider.id
+            current_site = Site.objects.get_current(request)
+            candidates = (
+                SocialApp.objects.filter(provider=provider_id, sites=current_site)
+                .distinct()
+                .order_by("id")
+            )
+
+            app = candidates.first()
+            if app:
+                return app
+
+            fallback = SocialApp.objects.filter(provider=provider_id).order_by("id").first()
+            if fallback:
+                return fallback
+            raise
     
     def pre_social_login(self, request, sociallogin):
         """
