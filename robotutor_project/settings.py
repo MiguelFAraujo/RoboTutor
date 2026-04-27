@@ -95,8 +95,9 @@ SITE_ID = 1
 # AUTH / ALLAUTH
 # --------------------------------------------------
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
+    "core.auth_backends.EmailOrUsernameBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 # Allauth Configuration (Updated Format)

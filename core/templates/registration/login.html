@@ -66,7 +66,7 @@
             <h2>🔐 Login RoboTutor</h2>
 
             <!-- Google Login -->
-            <a href="/accounts/google/login/" class="auth-btn"
+            <a href="{% url 'google_login_entry' %}" class="auth-btn"
                 style="display: block; text-align: center; text-decoration: none; margin-bottom: 1rem; background: white; color: #333;">
                 <svg style="width: 18px; height: 18px; vertical-align: middle; margin-right: 8px;" viewBox="0 0 24 24">
                     <path fill="#4285F4"
@@ -85,7 +85,7 @@
 
             <form method="post">
                 {% csrf_token %}
-                <input type="text" name="username" class="auth-input" placeholder="Email ou Usuário" required>
+                <input type="text" name="username" class="auth-input" placeholder="Usuario ou email" required>
                 <input type="password" name="password" class="auth-input" placeholder="Senha" required>
                 <button type="submit" class="auth-btn">Entrar</button>
             </form>

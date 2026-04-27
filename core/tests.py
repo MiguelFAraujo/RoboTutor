@@ -182,6 +182,16 @@ class BillingTests(TestCase):
         self.assertEqual(self.client.get(reverse('academy')).status_code, 200)
         self.assertEqual(self.client.get(reverse('academy_pack', kwargs={'slug': 'arduino-starter-lab'})).status_code, 200)
 
+    def test_login_accepts_email(self):
+        self.client.logout()
+        response = self.client.post(
+            reverse('login'),
+            {'username': 'test@example.com', 'password': 'password'},
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.wsgi_request.user.is_authenticated)
+
 
 class AITutorTests(TestCase):
     @patch('core.services.ai_service.genai.Client')
