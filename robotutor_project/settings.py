@@ -202,6 +202,7 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 GENERATED_PDF_DIR = BASE_DIR / "generated_pdfs"
+DELIVERY_BUNDLE_DIR = BASE_DIR / "generated_bundles"
 
 # --------------------------------------------------
 # I18N

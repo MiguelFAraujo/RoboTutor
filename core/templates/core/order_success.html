@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedido {{ order.id }} - RoboTutor</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        body { overflow:auto; background:#07111a; }
+        .shell { max-width: 860px; margin: 0 auto; padding: 48px 20px 72px; }
+        .card { background: rgba(8,15,24,.84); border:1px solid rgba(34,211,238,.18); border-radius:28px; padding:30px; }
+        .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:22px; }
+        .cta { display:inline-flex; align-items:center; justify-content:center; padding:12px 18px; border-radius:14px; text-decoration:none; font-weight:700; }
+        .cta-primary { background: linear-gradient(135deg,#22d3ee,#0f766e); color:#04111a; }
+        .cta-secondary { border:1px solid rgba(34,211,238,.24); color:#dffcff; }
+        p, li { color:#bfd0df; }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <section class="card">
+            <h1>Pedido #{{ order.id }}</h1>
+            <p><strong>Pack:</strong> {{ order.pack_title }}</p>
+            <p><strong>Status:</strong> {{ order.get_status_display }}</p>
+            <p><strong>Auditoria antifraude:</strong> score {{ order.risk_score }}</p>
+            {% if order.risk_reasons %}
+            <ul>
+                {% for reason in order.risk_reasons %}
+                <li>{{ reason }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <div class="actions">
+                {% if can_download %}
+                <a class="cta cta-primary" href="{% url 'academy_bundle_download' order.id %}">Baixar ZIP entregue</a>
+                <a class="cta cta-secondary" href="{% url 'academy_pdf_download' order.pack_slug %}">Baixar PDF</a>
+                {% else %}
+                <span class="cta cta-secondary">Pagamento ainda em confirmação</span>
+                {% endif %}
+                <a class="cta cta-secondary" href="{% url 'projects' %}">Ver meus pedidos</a>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

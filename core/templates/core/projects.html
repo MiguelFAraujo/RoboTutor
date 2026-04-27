@@ -234,6 +234,37 @@
                 {% endfor %}
             </div>
         </div>
+
+        <div style="margin-top: 48px;">
+            <div class="projects-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 1.7rem;">🧾 Pedidos e Entregas</h2>
+            </div>
+            {% if orders %}
+            <div class="projects-grid">
+                {% for order in orders %}
+                <div class="project-card">
+                    <span class="project-status {% if order.status == 'fulfilled' or order.status == 'paid' %}completed{% elif order.status == 'blocked' %}paused{% else %}in_progress{% endif %}">
+                        {{ order.get_status_display }}
+                    </span>
+                    <h3 class="project-title">{{ order.pack_title }}</h3>
+                    <p class="project-description">Risco: {{ order.risk_score }} • Pedido #{{ order.id }}</p>
+                    <div class="project-date">Criado em {{ order.created_at|date:"d/m/Y H:i" }}</div>
+                    <div class="project-actions">
+                        <a href="{% url 'academy_pack' order.pack_slug %}" class="back-btn" style="flex:1; justify-content:center;">Detalhes</a>
+                        {% if order.status == 'paid' or order.status == 'fulfilled' %}
+                        <a href="{% url 'academy_bundle_download' order.id %}" class="back-btn" style="flex:1; justify-content:center;">Bundle ZIP</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding:32px 20px;">
+                <h2>Nenhuma compra registrada</h2>
+                <p>Quando um pack for pago, o bundle entregue aparece aqui com rastreio e download.</p>
+            </div>
+            {% endif %}
+        </div>
     </div>
 
     <script>

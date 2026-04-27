@@ -1,4 +1,3 @@
-from pathlib import Path
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -12,9 +11,18 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 import json
 
 from .catalog import PROJECT_PACKS, get_pack_by_slug, get_pack_pdf_path
-from .models import MessageLog, Conversation, Project
+from .models import CatalogOrder, MessageLog, Conversation, Project
 from .ai_tutor import get_response_stream
+from .services.billing_service import create_checkout_for_order
 from .services.catalog_service import get_catalog_overview, get_catalog_pack
+from .services.commerce_service import (
+    create_catalog_order,
+    get_latest_access_order,
+    log_audit_event,
+    prepare_order_bundle,
+    user_has_pack_access,
+)
+from .services.pdf_service import generate_single_pack
 from .utils import get_user_daily_limit, get_daily_usage, check_message_limit
 from .forms import CustomUserCreationForm
 
@@ -72,28 +80,105 @@ def academy_pack_detail(request, slug):
     pack = get_catalog_pack(slug)
     if not pack:
         return render(request, "core/error.html", {"message": "Trilha não encontrada.", "error_code": "PACK_NOT_FOUND"}, status=404)
-    return render(request, "core/academy_detail.html", {"pack": pack})
+    has_access = user_has_pack_access(request.user, slug) if request.user.is_authenticated else False
+    access_order = get_latest_access_order(request.user, slug) if has_access else None
+    return render(request, "core/academy_detail.html", {"pack": pack, "has_access": has_access, "access_order": access_order})
 
 
 @require_GET
+@login_required(login_url='/accounts/login/')
 def academy_pdf_download(request, slug):
     pack = get_pack_by_slug(slug)
     if not pack:
         return render(request, "core/error.html", {"message": "Trilha não encontrada.", "error_code": "PACK_NOT_FOUND"}, status=404)
 
-    pdf_path = get_pack_pdf_path(slug)
-    if not pdf_path.exists():
+    if not user_has_pack_access(request.user, slug):
         return render(
             request,
             "core/error.html",
             {
-                "message": "O PDF desta trilha ainda não foi gerado. Execute o comando de geração primeiro.",
-                "error_code": "PDF_NOT_GENERATED",
+                "message": "Compre esta trilha ou tenha assinatura premium para baixar o PDF.",
+                "error_code": "PURCHASE_REQUIRED",
             },
-            status=404,
+            status=403,
         )
 
+    pdf_path = get_pack_pdf_path(slug)
+    if not pdf_path.exists():
+        pdf_path = generate_single_pack(slug)
+
+    log_audit_event("pdf_downloaded", user=request.user, request=request, payload={"pack_slug": slug})
+
     return FileResponse(open(pdf_path, "rb"), as_attachment=True, filename=pdf_path.name)
+
+
+@require_POST
+@login_required(login_url='/accounts/login/')
+def academy_pack_purchase(request, slug):
+    pack = get_pack_by_slug(slug)
+    if not pack:
+        return render(request, "core/error.html", {"message": "Trilha não encontrada.", "error_code": "PACK_NOT_FOUND"}, status=404)
+
+    if not request.user.email:
+        return render(
+            request,
+            "core/error.html",
+            {
+                "message": "Voce precisa ter um e-mail cadastrado para receber os materiais.",
+                "error_code": "EMAIL_REQUIRED",
+            },
+            status=400,
+        )
+
+    order = create_catalog_order(request.user, request, slug)
+    if order.status == CatalogOrder.STATUS_BLOCKED:
+        return render(
+            request,
+            "core/error.html",
+            {
+                "message": "Compra bloqueada para revisao manual por risco elevado. Verifique os dados e tente novamente depois.",
+                "error_code": "ORDER_BLOCKED",
+            },
+            status=403,
+        )
+
+    try:
+        checkout_session = create_checkout_for_order(request, order)
+    except ValueError:
+        return render(request, "core/error.html", {"message": "Stripe nao configurado para venda digital.", "error_code": "STRIPE_NOT_CONFIGURED"}, status=500)
+
+    order.stripe_session_id = checkout_session.id
+    order.save(update_fields=["stripe_session_id", "updated_at"])
+    log_audit_event("checkout_started", order=order, request=request, payload={"stripe_session_id": checkout_session.id})
+    return redirect(checkout_session.url)
+
+
+@require_GET
+@login_required(login_url='/accounts/login/')
+def academy_order_success(request, order_id):
+    order = get_object_or_404(CatalogOrder, id=order_id, user=request.user)
+    can_download = order.status in [CatalogOrder.STATUS_PAID, CatalogOrder.STATUS_FULFILLED]
+    return render(request, "core/order_success.html", {"order": order, "can_download": can_download})
+
+
+@require_GET
+@login_required(login_url='/accounts/login/')
+def academy_bundle_download(request, order_id):
+    order = get_object_or_404(CatalogOrder, id=order_id, user=request.user)
+    if order.status not in [CatalogOrder.STATUS_PAID, CatalogOrder.STATUS_FULFILLED]:
+        return render(
+            request,
+            "core/error.html",
+            {
+                "message": "O pagamento ainda nao foi confirmado para este pedido.",
+                "error_code": "ORDER_NOT_PAID",
+            },
+            status=403,
+        )
+
+    bundle_path = prepare_order_bundle(order)
+    log_audit_event("bundle_downloaded", order=order, request=request, payload={"bundle_path": str(bundle_path)})
+    return FileResponse(open(bundle_path, "rb"), as_attachment=True, filename=bundle_path.name)
 
 
 @login_required(login_url='/accounts/login/')
@@ -295,11 +380,13 @@ def delete_conversation(request, conversation_id):
 def projects_list(request):
     projects = list(Project.objects.filter(user=request.user))
     overview = get_catalog_overview()
+    orders = list(CatalogOrder.objects.filter(user=request.user))
 
     return render(request, 'core/projects.html', {
         'projects': projects,
         'user': request.user,
         'catalog': overview["packs"],
+        'orders': orders,
     })
 
 

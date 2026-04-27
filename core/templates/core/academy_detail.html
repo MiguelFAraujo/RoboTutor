@@ -34,7 +34,7 @@
             <div class="meta-grid">
                 <div class="meta-box"><strong>Público</strong><br>{{ pack.audience }}</div>
                 <div class="meta-box"><strong>Oferta</strong><br>{{ pack.offer_type }}</div>
-                <div class="meta-box"><strong>Faixa comercial</strong><br>{{ pack.price_anchor }}</div>
+                <div class="meta-box"><strong>Preço</strong><br>R$ {{ pack.price_brl }}</div>
                 <div class="meta-box"><strong>Entrega</strong><br>{{ pack.project_count }} projetos / {{ pack.duration }}</div>
             </div>
             <h2>Resultados prometidos</h2>
@@ -44,16 +44,25 @@
                 {% endfor %}
             </ul>
             <div class="actions">
-                {% if pack.pdf_exists %}
+                {% if has_access %}
                 <a class="cta cta-primary" href="{% url 'academy_pdf_download' pack.slug %}">Baixar PDF da trilha</a>
+                {% if access_order %}
+                <a class="cta cta-secondary" href="{% url 'academy_bundle_download' access_order.id %}">Baixar bundle entregue</a>
                 {% else %}
-                <span class="cta cta-secondary">Execute a geração do PDF</span>
+                <span class="cta cta-secondary">Acesso pela assinatura premium</span>
+                {% endif %}
+                {% else %}
+                <form method="post" action="{% url 'academy_pack_purchase' pack.slug %}">
+                    {% csrf_token %}
+                    <button class="cta cta-primary" type="submit" style="border:none; cursor:pointer;">Comprar e liberar downloads</button>
+                </form>
                 {% endif %}
                 <a class="cta cta-secondary" href="{% url 'register' %}">Acessar no RoboTutor</a>
             </div>
         </section>
         <section class="detail-card">
             <h2>Projetos incluídos</h2>
+            <p><strong>Entrega verificada:</strong> {{ pack.delivery_label }}</p>
             <div class="project-grid">
                 {% for project in pack.projects %}
                 <article class="project-card">

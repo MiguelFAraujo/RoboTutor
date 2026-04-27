@@ -15,6 +15,7 @@ def decorate_pack(pack):
     decorated["project_count"] = len(pack["projects"])
     decorated["pdf_exists"] = get_pack_pdf_path(pack["slug"]).exists()
     decorated["download_url"] = f"/academy/pdfs/{pack['slug']}/"
+    decorated["purchase_url"] = f"/academy/{pack['slug']}/buy/"
     return decorated
 
 

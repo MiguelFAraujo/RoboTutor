@@ -40,11 +40,11 @@
             <div class="academy-panel">
                 <div class="pack-chip">Produto único</div>
                 <h1>Quatro trilhas incluídas em um único produto.</h1>
-                <p>O RoboTutor reúne trilhas práticas para aplicar, estudar e ensinar. Tudo faz parte do mesmo produto de R$ 4,99 e pode ser exportado em PDF.</p>
+                <p>O RoboTutor reúne trilhas práticas para aplicar, estudar e ensinar. Cada compra libera PDF instantâneo, manifesto de auditoria e bundle ZIP com materiais públicos verificados.</p>
             </div>
             <div class="academy-panel">
                 <div class="academy-stats">
-                    <div class="academy-stat"><strong>R$ 4,99</strong><span>Preço do produto</span></div>
+                    <div class="academy-stat"><strong>R$ 4,99</strong><span>Preço por trilha</span></div>
                     <div class="academy-stat"><strong>{{ pack_count }}</strong><span>Trilhas incluídas</span></div>
                     <div class="academy-stat"><strong>{{ platforms|length }}</strong><span>Plataformas</span></div>
                 </div>
@@ -68,11 +68,7 @@
                 </ul>
                 <div class="pack-actions">
                     <a class="cta cta-primary" href="{% url 'academy_pack' pack.slug %}">Ver trilha</a>
-                    {% if pack.pdf_exists %}
-                    <a class="cta cta-secondary" href="{% url 'academy_pdf_download' pack.slug %}">Baixar PDF</a>
-                    {% else %}
-                    <span class="cta cta-secondary">PDF aguardando geração</span>
-                    {% endif %}
+                    <span class="cta cta-secondary">{{ pack.delivery_label }}</span>
                 </div>
             </article>
             {% endfor %}

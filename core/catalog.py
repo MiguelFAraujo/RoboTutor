@@ -12,9 +12,23 @@ PROJECT_PACKS = [
         "hook": "Primeiros 7 projetos para quem quer sair do LED e montar portfólio maker.",
         "audience": "Iniciantes, professores de oficina, jovens makers e feiras de ciências.",
         "price_anchor": "Produto de entrada",
+        "price_brl": "4,99",
+        "price_cents": 499,
         "offer_type": "PDF + código + lista de materiais",
         "difficulty": "Iniciante",
         "duration": "2 semanas",
+        "delivery_label": "PDF instantâneo + exemplos abertos",
+        "open_resources": [
+            {
+                "slug": "arduino-blink-example",
+                "label": "Exemplo oficial Blink",
+                "kind": "direct",
+                "url": "https://raw.githubusercontent.com/arduino/arduino-examples/main/examples/01.Basics/Blink/Blink.ino",
+                "target_path": "codigo-aberto/arduino/blink/Blink.ino",
+                "license": "Conteúdo público do repositório Arduino Examples",
+                "source": "Arduino",
+            }
+        ],
         "outcomes": [
             "Entender protoboard, leitura de sensores e atuadores básicos",
             "Montar portfólio com 7 projetos fáceis de apresentar",
@@ -67,9 +81,23 @@ PROJECT_PACKS = [
         "hook": "Projetos conectados com Wi-Fi e automação que parecem produto de verdade.",
         "audience": "Intermediários, técnicos, freelancers e alunos de IoT.",
         "price_anchor": "Trilha intermediária",
+        "price_brl": "4,99",
+        "price_cents": 499,
         "offer_type": "PDF + firmware + arquitetura",
         "difficulty": "Intermediário",
         "duration": "3 semanas",
+        "delivery_label": "PDF instantâneo + firmware aberto",
+        "open_resources": [
+            {
+                "slug": "esp32-wifi-scan",
+                "label": "Exemplo oficial WiFiScan",
+                "kind": "direct",
+                "url": "https://raw.githubusercontent.com/espressif/arduino-esp32/master/libraries/WiFi/examples/WiFiScan/WiFiScan.ino",
+                "target_path": "codigo-aberto/esp32/WiFiScan/WiFiScan.ino",
+                "license": "Conteúdo público do repositório Arduino ESP32",
+                "source": "Espressif",
+            }
+        ],
         "outcomes": [
             "Conectar ESP32 a APIs e painéis",
             "Montar provas de conceito com potencial comercial",
@@ -122,9 +150,23 @@ PROJECT_PACKS = [
         "hook": "Projetos com câmera, painel e automação para quem quer algo mais profissional.",
         "audience": "Estudantes técnicos, universitários, professores e entusiastas de Linux embarcado.",
         "price_anchor": "Trilha avançada",
+        "price_brl": "4,99",
+        "price_cents": 499,
         "offer_type": "Guia premium + scripts + configuração completa",
         "difficulty": "Intermediário a avançado",
         "duration": "4 semanas",
+        "delivery_label": "PDF instantâneo + pacote aberto verificado",
+        "open_resources": [
+            {
+                "slug": "picamera2-main",
+                "label": "Arquivo oficial Picamera2",
+                "kind": "archive",
+                "url": "https://github.com/raspberrypi/picamera2/archive/refs/heads/main.zip",
+                "target_path": "codigo-aberto/raspberry/picamera2-main.zip",
+                "license": "BSD-2-Clause",
+                "source": "Raspberry Pi",
+            }
+        ],
         "outcomes": [
             "Preparar ambiente Linux embarcado com serviços locais",
             "Montar demonstrações com câmera e automação",
@@ -177,9 +219,23 @@ PROJECT_PACKS = [
         "hook": "Sequência didática pronta para oficinas, contraturno e escolas.",
         "audience": "Professores, escolas, pais e projetos sociais.",
         "price_anchor": "Educacional",
+        "price_brl": "4,99",
+        "price_cents": 499,
         "offer_type": "PDFs didáticos + planos de aula + desafios imprimíveis",
         "difficulty": "Iniciante",
         "duration": "8 encontros",
+        "delivery_label": "PDF instantâneo + kit aberto para micro:bit",
+        "open_resources": [
+            {
+                "slug": "microbit-v2-samples",
+                "label": "Samples públicos micro:bit V2",
+                "kind": "archive",
+                "url": "https://github.com/lancaster-university/microbit-v2-samples/archive/refs/heads/master.zip",
+                "target_path": "codigo-aberto/microbit/microbit-v2-samples.zip",
+                "license": "Conteúdo público do repositório microbit-v2-samples",
+                "source": "Lancaster University",
+            }
+        ],
         "outcomes": [
             "Aplicar oficinas sem precisar criar tudo do zero",
             "Transformar conceitos abstratos em atividades práticas",
